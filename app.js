@@ -4,7 +4,9 @@ const iconv = require('iconv-lite');
 const proc = require('child_process');
 const ct = require('countries-and-timezones');
 const moment = require('moment');
+const fs = require('fs');
 const path = require('path');
+const request = require('request');
 const sound = require('sound-play');
 const gtts = require('node-gtts')('es');
 const piropos = require('./piropos').piropos;
@@ -298,9 +300,31 @@ function onlySubsAllowed(tags){
     }
 }
  
+function checkFileExists(path){
+    try {
+        if (fs.existsSync(path)) {
+          return true;
+        }
+      } catch(err) {
+        console.error(err);
+        return false;
+      }
+
+      return false;
+}
+
+function downloadFile(url, pathToSave){
+    request(url).pipe(fs.createWriteStream(pathToSave));
+}
 
 function playSound(w){
-    // if(w === 'gemido') sound.play(path.join(__dirname, "sounds/gemido.mp3"), VOL);
+    const baseURL = 'https://github.com/ArsDankeZik/MarquiBot/raw/main/sounds/';
+    const nameFiles = ['gemido', 'bofetón', 'pedo_normal', 'pedo_mojado', 'sorpresa_aplausos', 'gota', 'aplausosniños', 'suspense'];
+
+    nameFiles.forEach(element => {
+        const localPath = `sounds/${element}.mp3`
+        if(!checkFileExists(localPath)) downloadFile(`${encodeURI(baseURL)}${encodeURI(element)}.mp3`, localPath);
+    });
     
     if(w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
     if(w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
@@ -310,6 +334,7 @@ function playSound(w){
     if(w === 'gota') sound.play(path.join(__dirname, "sounds/gota.mp3"), VOL);
     if(w === 'aplausos niños') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
     if(w === 'suspense') sound.play(path.join(__dirname, "sounds/suspense.mp3"), VOL);
+    // if(w === 'gemido') sound.play(path.join(__dirname, "sounds/gemido.mp3"), VOL);
 }
 
 function dimeMiRango(badge){
