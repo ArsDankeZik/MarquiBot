@@ -52,14 +52,14 @@ client.on('message', (channel, tags, message, self) => {
     // console.log(tags);
 
     
-    if(message.toLocaleLowerCase().includes('!ttsinsulto')){
+    if(message.toLocaleLowerCase().includes('!ttsinsulto' && !message.toLocaleLowerCase().includes('v2'))){
         msg = message.replace('!ttsinsulto', '');
         onlySubsAllowed(tags) ? 
             talkToMe(`${tags.username} dice ${pickRandom(insultos)}`) : 
             client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
     }
 
-    if(message.toLocaleLowerCase().includes('!ttspiropo')){
+    if(message.toLocaleLowerCase().includes('!ttspiropo') && !message.toLocaleLowerCase().includes('v2')){
         // console.log(message);
         msg = message.replace('!ttspiropo', '');
         onlySubsAllowed(tags) ? 
