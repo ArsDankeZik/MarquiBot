@@ -1,0 +1,7 @@
+datos.json
+node_modules/
+updates/*
+*.exe
+*.wav
+*.mp3
+.env
