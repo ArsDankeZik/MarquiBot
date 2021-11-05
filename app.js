@@ -300,8 +300,9 @@ function onlySubsAllowed(tags){
  
 
 function playSound(w){
-    if(w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
     // if(w === 'gemido') sound.play(path.join(__dirname, "sounds/gemido.mp3"), VOL);
+    
+    if(w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
     if(w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
     if(w === 'pedomojado') sound.play(path.join(__dirname, "sounds/pedo_mojado.mp3"), VOL);
     if(w === 'sorpresa') sound.play(path.join(__dirname, "sounds/sorpresa_aplausos.mp3"), VOL);

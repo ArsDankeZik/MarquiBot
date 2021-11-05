@@ -3,5 +3,5 @@ node_modules/
 updates/*
 *.exe
 *.wav
-*.mp3
+# *.mp3
 .env
