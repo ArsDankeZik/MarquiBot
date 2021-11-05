@@ -1,0 +1,7 @@
+albermarquibot.ps1 --> click derecho --> Ejecutar con PowerShell:
+    - Ejecuta actualizaciones 
+    - Ejecuta la instalación de módulos faltantes
+    - Ejecuta el bot
+
+albermarquibot.exe solo está en caso de que la política de ejecución de scripts está deshabilitada para tu equipo (hablando en cristiano no se hace nada con el de primeras)
+Si el bot deja de funcionar por X razón en la terminal que hay abierta escribir rs
