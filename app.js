@@ -125,6 +125,23 @@ client.on('message', (channel, tags, message, self) => {
             else client.say(channel, `${registerUserAndCount(msg, 'reset')}`);
         }
     }
+
+    if(message.toLowerCase().includes('!help')){
+        msg = message.replace('!help', '').trim();
+        msg = msg.replace('!', '');
+        menu = msg.length == 0;
+        
+        const checkLVL = (tags) => {
+            if(tags.badges != null && tags.badges != undefined){
+                if(tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem') return 2;
+                if(tags.badges.hasOwnProperty('vip') || tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('founder') || tags.badges.hasOwnProperty('premium')) return 1;
+            }
+            return 0;
+        };
+
+        if(menu) client.say(channel, `Escribe !help comando(sustituye comando por el comando que quieras consultar, no me seas borrego) para saber más acerca de un comando. Comandos disponibles: ${helpMenu(checkLVL(tags), true, null)}`);
+        if(!menu) client.say(channel, `${helpMenu(checkLVL(tags), false, msg)}`); 
+    }
     
     switch(message.toLowerCase()){
         case '!insulto': 
@@ -155,31 +172,53 @@ client.on('message', (channel, tags, message, self) => {
         case '!creador':
             client.say(channel, 'El nombre de mi creador es @noctismaiestatem (twitch.tv/noctismaiestatem)');
             break;
-        case '!help':
-            client.say(channel, 
-                `
-                !insulto: te devolverá un insulto rándom || 
-                !piropo: leerá por voz un piropo aleatorio || 
-                !rango: te dirá qué tipo de miembro eres en la comunidad || 
-                !creador: devolverá el nombre del creador del bot || 
-                !dado: tirará un dado por ti ||
-                !hora [ES, RO, RU, AR, CO]: devuelve la hora en estos países y sus diferentes zonas
-                `);
-            client.say(channel, 
-                `
-                !sonido [bofeton, pedo, pedomojado, sorpresa, aplausos, gota, aplausos niños, suspense]: reproduce uno de los sonidos de la lista (mod, vip, sub)||
-                !tts: leerá tu mensaje por voz [beta] (mod, vip, sub) || 
-                !ttsinsulto: leerá por voz un insulto aleatorio (mod, vip, sub) ||
-                !ttspiropo: leerá por voz un piropo aleatorio (mod, vip, sub) ||
-                !adivinaelnr [1, 2...50]: mini juego de adivinar el número con 6 vidas ||
-                !vidas: te muestra las vidas que te quedan ||
-                !rvidas [usuario]: te resetea la vida (solo el fundador y @NoctisMaiestatem) ||
-                !mostrarnr: muestra el número a adivinar (solo el fundador y @NoctisMaiestatem)
-                `);
-            break;
     };
 });
 
+
+/**
+ * 
+ * @param {*} lvl 0, 1, 2 = (nobody), (mod, sub, vip), (broadcaster)
+ * @param {*} menu if true show commands avaible
+ * @param {*} help command to show help [optional]
+ * @returns 
+ */
+function helpMenu(lvl, menu, help){
+    const main = {
+        'insulto': 'Devolverá al chat un insulto al azar',
+        'piropo': 'Devolverá al chat un piropo al azar',
+        'rango': 'Te dirá qué rango tienes',
+        'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
+        'dado': 'Devolverá un número al azar entre el uno y el seis',
+        'hora': '!hora ES devolverá la hora de las distintas zonas horarias dentro de un país (si no te sabes el código de tu país búsca en google: ISO 3166-1 alfa-2)',
+        'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, sorpresa, aplausos, gota, aplausos niños, suspense) según le indiques. EJ: !sonido bofeton',
+        'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
+        'ttsinsulto': 'Leerá un insulto al azar',
+        'ttspiropo': 'Leerá un piropo al azar',
+        'adivinaelnr': 'En cada partida se generará un número al azar del 1 al 50. Con !adivinaelnr puedes intentar adivinarlo, pero cuidado, solo tienes seis vidas. Si fallas se te restará una vida, por otro lado sí ganas se te sumará una. EJ: !adivinaelnr 13',
+        'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
+        'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
+        'mostrarnr': 'Este comando enseñará el número a adivinar en el chat.',
+        'help': 'Este comando te devolverá la lista de comandos disponibles acorde a tu rango en el chat. Sí lo acompañas de algún otro comando te mostrará una descripción de lo que hace el comando especificado. EJ: !help tts'
+    };
+
+    const broadcasterCMD = ['mostrarnr', 'rvidas'];
+    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo'];
+
+    if(lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
+    if(lvl == 1 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
+    if(lvl == 2 && menu == true) return Object.keys(main).map(cmd => '!'+cmd).join(', ');
+
+    if(menu == false && help && main.hasOwnProperty(help)) {
+        if(lvl == 0 && !broadcasterCMD.includes(help) && !specialsCMD.includes(help)) return main[help];
+        if(lvl == 1 && !broadcasterCMD.includes(help)) return main[help];
+        if(lvl == 2) return main[help];
+
+        return 'No tienes permisos para ejecutar la ayuda de este comando';
+    } else return `No existe el comando ${help} o lo has escrito mal`;
+
+    return 'Hmmm. No debería haber pasado esto, avisa a @NoctisMaiestatem. Mientras tanto reinicia el bot.';
+}
 // client.on('resub', (channel, username, months, message, userstate, methos) => {
 //     client.say(channel, `¡El cabronazo de ${username} lleva ya ${months} meses suscrito!`);
 // });
@@ -188,11 +227,12 @@ function registerUserAndCount(name, opt){
     const totalLifes = 6;
 
     if(!OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
+    
+    if(opt === 'reset' && OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
     if(OBJECT_PEOPLE_LIFES[name] == 0) return false;
 
     if(opt === 'rest') OBJECT_PEOPLE_LIFES[name] -= 1;
     if(opt === 'sum') OBJECT_PEOPLE_LIFES[name] += 1;
-    if(opt === 'reset' && OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
 
     return `Te quedan ${OBJECT_PEOPLE_LIFES[name]}`;
 }
