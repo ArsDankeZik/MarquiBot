@@ -337,6 +337,7 @@ function onlySubsAllowed(tags){
         if(tags.badges.hasOwnProperty('moderator')) return true;
         if(tags.badges.hasOwnProperty('founder')) return true;
         if(tags.badges.hasOwnProperty('premium')) return true;
+        if(tags.badges.hasOwnProperty('suscriber')) return true;
     }
 }
  
