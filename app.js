@@ -188,7 +188,7 @@ function helpMenu(lvl, menu, help){
         'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
         'dado': 'Devolverá un número al azar entre el uno y el seis',
         'hora': '!hora ES devolverá la hora de las distintas zonas horarias dentro de un país (si no te sabes el código de tu país búsca en google: ISO 3166-1 alfa-2)',
-        'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, sorpresa, aplausos, gota, aplausos niños, suspense) según le indiques. EJ: !sonido bofeton',
+        'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, recalculando, risatos, siuuu, estas tocandome, notificacion) según le indiques. EJ: !sonido bofeton',
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
@@ -364,6 +364,7 @@ function playSound(w){
         if(!checkFileExists(localPath)) downloadFile(`${encodeURI(baseURL)}${encodeURI(element)}.mp3`, localPath);
     });
     
+    
     if(w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
     if(w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
     if(w === 'pedomojado') sound.play(path.join(__dirname, "sounds/pedo_mojado.mp3"), VOL);
@@ -373,7 +374,7 @@ function playSound(w){
     if(w === 'recalculando') sound.play(path.join(__dirname, "sounds/recalculando.mp3"), VOL);
     if(w === 'risatos') sound.play(path.join(__dirname, "sounds/risacontos.mp3"), VOL);
     if(w === 'siuuu') sound.play(path.join(__dirname, "sounds/siuuu.mp3"), VOL);
-    if(w === 'estastocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
+    if(w === 'estas tocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
     if(w === 'notificacion') sound.play(path.join(__dirname, "sounds/whatsappweb.mp3"), VOL);
     // if(w === 'gemido') sound.play(path.join(__dirname, "sounds/gemido.mp3"), VOL);
 }
