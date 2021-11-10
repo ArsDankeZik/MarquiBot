@@ -15,14 +15,16 @@ const insultos = require('./insultos').insultos;
 // Variables para el programa
 var filepath = path.join(__dirname, 'prueba.wav');
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
-const VOL = 0.9; // Controla el volumen de los sonidos !sonido
-const VERSION = '1.2.6';
+const VOL = 0.60; // Controla el volumen de los sonidos !sonido
+const VERSION = '1.2.7';
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
 var OBJECT_PEOPLE_LIFES = {};
 console.log(magicNumber);
 
 // LINK PARA HACER IMPLEMENTAR CANJEAR POR PUNTOS https://www.twitch.tv/videos/806178796?collection=E1yJPFFiSBZBrQ
+// Audio https://www.npmjs.com/package/speaker
+// Audio buffer https://www.npmjs.com/package/audio-buffer
 
 const client = new tmi.Client({
     options: { debug: true, messagesLogLevel: 'info'},
