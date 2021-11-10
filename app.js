@@ -37,20 +37,17 @@ const client = new tmi.Client({
     channels: [`${process.env.TWITCH_CHANNEL}`]
 });
 
-
-function googleTalkToMe(text){
-    gtts.save(filepath, text, () => {
-        sound.play(path.join(__dirname, "prueba.wav"), VOL);
+async function googleTalkToMe(text){
+    await gtts.save(filepath, text, async () => {
+        await sound.play(path.join(__dirname, "prueba.wav"), VOL).then(r => FLAG = false);
     });
 }
 
 client.connect().catch(console.error);
-
 client.on('message', (channel, tags, message, self) => {
     if(self) return;
     if(tags.username.toLowerCase() === 'streamelements') return;
     // console.log(tags);
-
     
     if(message.toLocaleLowerCase().includes('!ttsinsulto' && !message.toLocaleLowerCase().includes('v2'))){
         msg = message.replace('!ttsinsulto', '');
@@ -360,7 +357,7 @@ function downloadFile(url, pathToSave){
 
 function playSound(w){
     const baseURL = 'https://github.com/ArsDankeZik/MarquiBot/raw/main/sounds/';
-    const nameFiles = ['gemido', 'bofetón', 'pedo_normal', 'pedo_mojado', 'sorpresa_aplausos', 'gota', 'aplausosniños', 'suspense'];
+    const nameFiles = 'gemido,alertasubnormal,aplausosniños,bofetón,estastocandome,gota,pedo_mojado,pedo_normal,recalculando,risacontos,siuuu,sorpresa_aplausos,suspense,whatsappweb'.split(',');
 
     nameFiles.forEach(element => {
         const localPath = `sounds/${element}.mp3`
@@ -370,11 +367,14 @@ function playSound(w){
     if(w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
     if(w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
     if(w === 'pedomojado') sound.play(path.join(__dirname, "sounds/pedo_mojado.mp3"), VOL);
-    if(w === 'sorpresa') sound.play(path.join(__dirname, "sounds/sorpresa_aplausos.mp3"), VOL);
-    if(w === 'aplausos') sound.play(path.join(__dirname, "sounds/sorpresa_aplausos.mp3"), VOL);
     if(w === 'gota') sound.play(path.join(__dirname, "sounds/gota.mp3"), VOL);
     if(w === 'aplausos niños') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
-    if(w === 'suspense') sound.play(path.join(__dirname, "sounds/suspense.mp3"), VOL);
+    if(w === 'alertasubnormal') sound.play(path.join(__dirname, "sounds/alertasubnormal.mp3"), VOL);
+    if(w === 'recalculando') sound.play(path.join(__dirname, "sounds/recalculando.mp3"), VOL);
+    if(w === 'risatos') sound.play(path.join(__dirname, "sounds/risacontos.mp3"), VOL);
+    if(w === 'siuuu') sound.play(path.join(__dirname, "sounds/siuuu.mp3"), VOL);
+    if(w === 'estastocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
+    if(w === 'notificacion') sound.play(path.join(__dirname, "sounds/whatsappweb.mp3"), VOL);
     // if(w === 'gemido') sound.play(path.join(__dirname, "sounds/gemido.mp3"), VOL);
 }
 
