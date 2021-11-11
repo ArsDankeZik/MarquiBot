@@ -41,76 +41,11 @@ const client = new tmi.Client({
     channels: [`${process.env.TWITCH_CHANNEL}`]
 });
 
-// Servirá para almacenar tanto mensajes de texto, insultos, etc
-// let buffer = [];
-// let timestamp = Date.now()+3500;
-
-// function googleTalkToMe(text){
-//     gtts.save(filepath, text, () => {
-//         //Cambiar por filepath
-//         sound.play(path.join(__dirname, "prueba.wav"), VOL);
-//     });
-//     try {
-//         getAudioDurationInSeconds(filepath).then((duration) => {
-//             return Math.round(duration);
-//         });    
-//     } catch (error) {
-//         return error;
-//     }
-// }
-
-// async function registerInBuffer(text){
-//     if(text && text.length > 0) {
-//         if(buffer.length == 0) buffer.push(text);
-//         else buffer.unshift(text);
-//         timestamp = addOrSubMinutes((text.length * 1500) / 60000);
-//     }
-// }
-
-// let BLOCK_FUNCT = false;
-// function setBuffer(text){
-//     const timeoff = 500;
-//     if(timestamp == 0){
-//         console.log(googleTalkToMe(text));
-        
-//         timestamp = text.length * timeoff;
-       
-//         let stdout = setTimeout(() => {
-//             timestamp = 0;
-//             clearTimeout(stdout);
-//         }, text.length * timeoff);
-//     }
-//     else if(timestamp > 0) {
-//         let stdout = setTimeout(() => {
-//             googleTalkToMe(text);
-//             clearTimeout(stdout);
-//         }, timestamp);
-//         timestamp = text.length * timeoff;
-//     }
-// }
-// getAudioDurationInSeconds('sounds/suspense.mp3').then((duration) => {
-//     console.log('Duration: '+duration);
-// });
-            
-
-// setBuffer('hola qué tal');
-// setBuffer('mi nombre es Richardo');
-// setBuffer('El Libro Guinness de los Récords ha otorgado este reconocimiento a la novela En busca del tiempo perdido, de Marcel Proust.');
-// setBuffer('adios');
-// setBuffer('Entonces si yo pongo un texto después del largo se va a la puta');
-
-/*
-peticion de texto/sonido
-si el timestamp es > que el timestamp actual
-creamos un timeout del timestamp-off - timestamp actual de duración
-ejecutamos la petición
-detenemos el timeout
-*/
- 
-
-// registerInBuffer('Hola Mundo');
-// registerInBuffer('Pedazo de imbécil');
-// registerInBuffer('Eres un cabrón');
+function googleTalkToMe(text){
+    gtts.save(filepath, text, () => {
+        sound.play(path.join(__dirname, "prueba.wav"), VOL); 
+    });
+}
 
 client.connect().catch(console.error);
 
