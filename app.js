@@ -138,8 +138,8 @@ client.on('message', (channel, tags, message, self) => {
         // console.log(message);    
         msg = message.replace('!tts', '');
         onlySubsAllowed(tags) ? 
-            // talkToMe(`${tags.username} dice ${msg}`)
-            setBuffer(`${tags.username} dice ${msg}`) 
+            talkToMe(`${tags.username} dice ${msg}`)
+            // setBuffer(`${tags.username} dice ${msg}`) 
             : client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
     }
 
