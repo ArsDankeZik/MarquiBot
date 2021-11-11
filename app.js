@@ -11,16 +11,18 @@ const sound = require('sound-play');
 const gtts = require('node-gtts')('es');
 const piropos = require('./piropos').piropos;
 const insultos = require('./insultos').insultos;
+const { getAudioDurationInSeconds } = require('get-audio-duration');
 
 // Variables para el programa
-var filepath = path.join(__dirname, 'prueba.wav');
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
 const VOL = 0.60; // Controla el volumen de los sonidos !sonido
-const VERSION = '1.2.7';
+const VERSION = '1.2.8';
+var filepath = path.join(__dirname, 'prueba.wav');
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
 var OBJECT_PEOPLE_LIFES = {};
-console.log(magicNumber);
+
+console.log(`El número a adivinar es: ${magicNumber}`);
 
 // LINK PARA HACER IMPLEMENTAR CANJEAR POR PUNTOS https://www.twitch.tv/videos/806178796?collection=E1yJPFFiSBZBrQ
 // Audio https://www.npmjs.com/package/speaker
@@ -39,13 +41,79 @@ const client = new tmi.Client({
     channels: [`${process.env.TWITCH_CHANNEL}`]
 });
 
-async function googleTalkToMe(text){
-    await gtts.save(filepath, text, async () => {
-        await sound.play(path.join(__dirname, "prueba.wav"), VOL).then(r => FLAG = false);
-    });
-}
+// Servirá para almacenar tanto mensajes de texto, insultos, etc
+// let buffer = [];
+// let timestamp = Date.now()+3500;
+
+// function googleTalkToMe(text){
+//     gtts.save(filepath, text, () => {
+//         //Cambiar por filepath
+//         sound.play(path.join(__dirname, "prueba.wav"), VOL);
+//     });
+//     try {
+//         getAudioDurationInSeconds(filepath).then((duration) => {
+//             return Math.round(duration);
+//         });    
+//     } catch (error) {
+//         return error;
+//     }
+// }
+
+// async function registerInBuffer(text){
+//     if(text && text.length > 0) {
+//         if(buffer.length == 0) buffer.push(text);
+//         else buffer.unshift(text);
+//         timestamp = addOrSubMinutes((text.length * 1500) / 60000);
+//     }
+// }
+
+// let BLOCK_FUNCT = false;
+// function setBuffer(text){
+//     const timeoff = 500;
+//     if(timestamp == 0){
+//         console.log(googleTalkToMe(text));
+        
+//         timestamp = text.length * timeoff;
+       
+//         let stdout = setTimeout(() => {
+//             timestamp = 0;
+//             clearTimeout(stdout);
+//         }, text.length * timeoff);
+//     }
+//     else if(timestamp > 0) {
+//         let stdout = setTimeout(() => {
+//             googleTalkToMe(text);
+//             clearTimeout(stdout);
+//         }, timestamp);
+//         timestamp = text.length * timeoff;
+//     }
+// }
+// getAudioDurationInSeconds('sounds/suspense.mp3').then((duration) => {
+//     console.log('Duration: '+duration);
+// });
+            
+
+// setBuffer('hola qué tal');
+// setBuffer('mi nombre es Richardo');
+// setBuffer('El Libro Guinness de los Récords ha otorgado este reconocimiento a la novela En busca del tiempo perdido, de Marcel Proust.');
+// setBuffer('adios');
+// setBuffer('Entonces si yo pongo un texto después del largo se va a la puta');
+
+/*
+peticion de texto/sonido
+si el timestamp es > que el timestamp actual
+creamos un timeout del timestamp-off - timestamp actual de duración
+ejecutamos la petición
+detenemos el timeout
+*/
+ 
+
+// registerInBuffer('Hola Mundo');
+// registerInBuffer('Pedazo de imbécil');
+// registerInBuffer('Eres un cabrón');
 
 client.connect().catch(console.error);
+
 client.on('message', (channel, tags, message, self) => {
     if(self) return;
     if(tags.username.toLowerCase() === 'streamelements') return;
@@ -70,8 +138,9 @@ client.on('message', (channel, tags, message, self) => {
         // console.log(message);    
         msg = message.replace('!tts', '');
         onlySubsAllowed(tags) ? 
-            talkToMe(`${tags.username} dice ${msg}`) : 
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+            // talkToMe(`${tags.username} dice ${msg}`)
+            setBuffer(`${tags.username} dice ${msg}`) 
+            : client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
     }
 
     if(message.toLocaleLowerCase().includes('!ttsinsultov2')){
