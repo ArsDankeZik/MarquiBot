@@ -54,6 +54,7 @@ const whisperOptions = {
 const client = new tmi.Client(options);
 const whisperClient = new tmi.Client(whisperOptions);
 
+
 function googleTalkToMe(text){
     gtts.save(filepath, text, () => {
         sound.play(path.join(__dirname, "prueba.wav"), VOL); 
@@ -79,11 +80,12 @@ function cleanCommandListener(arr){
 client.connect().catch(console.error);
 whisperClient.connect().catch(console.error);
 
+
 client.on('message', (channel, tags, message, self) => {
     if(self) return;
     if(tags.username.toLowerCase() === 'streamelements') return;
     //Normalize cmd and check if include cmd
-    const msgIncludesCMD = (cmd, message) => message.toLocaleLowerCase().includes(cmd) ? true : false;
+    const msgIncludesCMD = (cmd, message) => message.toLowerCase().includes(cmd) ? true : false;
     //Normalize cmd and check if cmd and message match
     const msgIsCMD = (cmd, message) => message.toLowerCase().split(' ')[0] == cmd ? true : false;
 
@@ -97,6 +99,20 @@ client.on('message', (channel, tags, message, self) => {
             whisperClient.whisper('noctismaiestatem', 'Utilizando el comando !delete');
             client.deletemessage(channel, tags.id);
         }
+    }
+
+    if(msgIncludesCMD('!memide', message)){
+        const params = [channel, tags, message, '!excluir', true, []];
+        const value = cleanCommandListener('!memide', []);
+        const memide = getRandInt(1, 35);
+        const frase = (cm) => {
+            if(cm > 0 && cm <= 13) return `Según la RAE tu pene de ${cm} cm pasa a ser una pena`;
+            else if(cm > 13 && cm <= 22) return `Tu pene de ${cm} cm no es para tanto a no ser que sepas usarlo`;
+            else if(cm > 22 && cm <= 35) return `Este pene de ${cm} cm está hecho para matar y no para dar placer`;
+            else return `No he podido calcular tu pene`;
+        }
+
+        client.say(channel, `@${tags.username}: ${frase(memide)}`);
     }
 
     if(msgIncludesCMD('!deftts', message)){
@@ -165,20 +181,20 @@ client.on('message', (channel, tags, message, self) => {
         else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
-    if(message.toLocaleLowerCase().includes('!sonido')){
+    if(message.toLowerCase().includes('!sonido')){
         msg = message.replace('!sonido', '').trim();
         onlySubsAllowed(tags) ? 
             playSound(`${msg}`) : 
             client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
     }
 
-    if(message.toLocaleLowerCase().includes('!hora')){
+    if(message.toLowerCase().includes('!hora')){
         msg = message.replace('!hora', '').trim();
         console.log(msg);
         client.say(channel, `${calculateHour(msg.toUpperCase())}`);
     }
 
-    if(message.toLocaleLowerCase().includes('!adivinaelnr')){
+    if(message.toLowerCase().includes('!adivinaelnr')){
         msg = message.replace('!adivinaelnr', '').trim();
         client.say(channel, `${takeAGuess(msg, tags.username)}`);
     }
@@ -256,7 +272,6 @@ client.on('message', (channel, tags, message, self) => {
     };
 });
 
-
 /**
  * 
  * @param {*} lvl 0, 1, 2 = (nobody), (mod, sub, vip), (broadcaster)
@@ -307,9 +322,6 @@ function helpMenu(lvl, menu, help){
 
     return 'Hmmm. No debería haber pasado esto, avisa a @NoctisMaiestatem. Mientras tanto reinicia el bot.';
 }
-// client.on('resub', (channel, username, months, message, userstate, methos) => {
-//     client.say(channel, `¡El cabronazo de ${username} lleva ya ${months} meses suscrito!`);
-// });
 
 function registerUserAndCount(name, opt){
     const totalLifes = 6;
@@ -346,7 +358,7 @@ function takeAGuess(nr, name){
         } while (magicNumber == previousNumber);
         console.log(`El nuevo número que se ha generado es el ${magicNumber}`);
         registerUserAndCount(name, 'sum');
-        talkToMe(`${name} ha ganado un pin por adivinar el número ${previousNumber}`);
+        // return `${name} ha ganado un pin por adivinar el número ${previousNumber}`;
         return `Efectivamente, el número era ${previousNumber}. ¡Has ganado un pin!`;
     }
 
@@ -434,8 +446,8 @@ function onlySubsAllowed(tags){
         if(tags.badges.hasOwnProperty('vip')) return true;
         if(tags.badges.hasOwnProperty('moderator')) return true;
         if(tags.badges.hasOwnProperty('founder')) return true;
-        if(tags.badges.hasOwnProperty('premium')) return true;
         if(tags.badges.hasOwnProperty('suscriber')) return true;
+        // if(tags.badges.hasOwnProperty('premium')) return true;
     }
 }
  
