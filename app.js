@@ -80,7 +80,6 @@ function cleanCommandListener(arr){
 client.connect().catch(console.error);
 whisperClient.connect().catch(console.error);
 
-
 client.on('message', (channel, tags, message, self) => {
     if(self) return;
     if(tags.username.toLowerCase() === 'streamelements') return;
@@ -264,10 +263,7 @@ client.on('message', (channel, tags, message, self) => {
             break;
         case '!mostrarnr':
             if(tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem'))
-                console.log(channel, `El número es ${magicNumber}`);
-                if(isModWhoCalls(tags)){
-                    whisperClient.whisper(tags.username, `El número a adivinar es ${magicNumber}`);
-                }
+            if(isModWhoCalls(tags)) console.log(channel, `El número es ${magicNumber}`);
             break;
         case '!creador':
             client.say(channel, 'El nombre de mi creador es @noctismaiestatem (twitch.tv/noctismaiestatem)');
@@ -305,6 +301,7 @@ function helpMenu(lvl, menu, help){
         'dc': 'Enlace de invitación al servidor de Discord',
         'ig': 'Enlace del instagram de AlberMarqui',
         'tw': 'Enlace del twitter de AlberMarqui',
+        'social': 'Muestra los enlaces sociales del streamer',
         'help': 'Este comando te devolverá la lista de comandos disponibles acorde a tu rango en el chat. Sí lo acompañas de algún otro comando te mostrará una descripción de lo que hace el comando especificado. EJ: !help tts'
     };
 
