@@ -77,18 +77,13 @@ client.on('message', (channel, tags, message, self) => {
     //Restrict perms on user doesn't matter if have vip, sub, mod
     const excludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST.push(user);
     const deleteFromExcludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST.filter(r => r != user); 
-    const defTTSTemp = (v) => {
-        if(v == true) return;
-        if(v && v.split(' ')[0] && v.split(' ')[1] == 'monguer') PREFER_TTS = false;
-        if(v && v.split(' ')[0] && v.split(' ')[1] != 'monguer') PREFER_TTS = true;
-    }
 
     if(msgIncludesCMD('!deftts', message)){
         if(isModWhoCalls(tags)){
             const params = [channel, tags, message, '!deftts', true, []];
             const ttsMode = cleanCommandListener(params);
-            if(ttsMode && ttsMode == 'monguer') PREFER_TTS = false;
-            else if(ttsMode && ttsMode == 'lento') PREFER_TTS = true;
+            if(ttsMode && ttsMode == '-m') PREFER_TTS = false;
+            else if(ttsMode && ttsMode == '-l') PREFER_TTS = true;
         }
     }
 
@@ -113,7 +108,7 @@ client.on('message', (channel, tags, message, self) => {
     if(msgIncludesCMD('!ttsinsulto', message)){
         const params = [channel, tags, message, '!ttsinsulto', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
-        defTTSTemp(value);
+
         if(PREFER_TTS && value){
             googleTalkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
         }
@@ -126,7 +121,7 @@ client.on('message', (channel, tags, message, self) => {
     if(msgIncludesCMD('!ttspiropo', message)){
         const params = [channel, tags, message, '!ttspiropo', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
-        defTTSTemp(value);
+
         if(PREFER_TTS && value){
             googleTalkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
         }
@@ -139,7 +134,6 @@ client.on('message', (channel, tags, message, self) => {
     if(msgIsCMD('!tts', message)){
         const params = [channel, tags, message, '!tts', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
-        defTTSTemp(value);
 
         if(PREFER_TTS) {
             googleTalkToMe(`${tags.username} dice ${value}`);
@@ -149,30 +143,6 @@ client.on('message', (channel, tags, message, self) => {
         }
         else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
-
-    if(message.toLocaleLowerCase().includes('!ttsinsultov2')){
-        msg = message.replace('!ttsinsultov2', '');
-        onlySubsAllowed(tags) ? 
-            googleTalkToMe(`${tags.username} dice ${pickRandom(insultos)}`) : 
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
-    }
-
-    if(message.toLocaleLowerCase().includes('!ttspiropov2')){
-        // console.log(message);
-        msg = message.replace('!ttspiropov2', '');
-        onlySubsAllowed(tags) ? 
-            googleTalkToMe(`${tags.username} dice ${pickRandom(piropos)}`) : 
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
-    }
-
-    if(message.toLocaleLowerCase().includes('!ttsv2') && !message.toLocaleLowerCase().includes('!ttsinsulto') && !message.toLocaleLowerCase().includes('!ttspiropo')){
-        // console.log(message);    
-        msg = message.replace('!ttsv2', '');
-        onlySubsAllowed(tags) ? 
-            googleTalkToMe(`${tags.username} dice ${msg}`) : 
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
-    }
-
 
     if(message.toLocaleLowerCase().includes('!sonido')){
         msg = message.replace('!sonido', '').trim();
@@ -252,7 +222,6 @@ client.on('message', (channel, tags, message, self) => {
         case '!social':
             client.say(channel, `DC: https://discord.gg/d3xTjTwMXn, IG: https://bit.ly/3ky9kv5, TW: https://bit.ly/3Fb6vba`);
             break;
-
         case '!mostrarnr':
             if(tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem'))
                 client.say(channel, `El número es ${magicNumber}`);
@@ -273,7 +242,7 @@ client.on('message', (channel, tags, message, self) => {
  */
 function helpMenu(lvl, menu, help){
     const main = {
-        'deftts': 'Establece el modo tts a hablar (por defecto: lento) para todo el chat y todo el stream. EJ: !deftts monguer, !deftts lento',
+        'deftts': 'Establece el modo tts a hablar (por defecto: lento) para todo el chat y durante todo el stream. El -m es para el tts monguer y el -l es para el tts lento. EJ: !deftts -m, !deftts -l',
         'excluir':'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
         'incluir':'Revertirá las acciones del comando !excluir. EJ: !incluir anonymous',
         'insulto': 'Devolverá al chat un insulto al azar',
