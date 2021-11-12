@@ -78,6 +78,13 @@ client.on('message', (channel, tags, message, self) => {
     const excludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST.push(user);
     const deleteFromExcludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST.filter(r => r != user); 
 
+    if(msgIsCMD('!delete', message)){
+        if(isModWhoCalls(tags)){
+            console.log(tags);
+            client.deletemessage(channel, tags.id);
+        }
+    }
+
     if(msgIncludesCMD('!deftts', message)){
         if(isModWhoCalls(tags)){
             const params = [channel, tags, message, '!deftts', true, []];
@@ -193,7 +200,10 @@ client.on('message', (channel, tags, message, self) => {
             client.say(channel, `${pickRandom(insultos)}`);
             break;
         case '!log':
-            if(tags.badge.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('broadcaster')) console.log(tags);
+            if(tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('broadcaster')) {
+                console.log(message);
+                console.log(tags);
+            }
             break;
         case '!rango':
             client.say(channel, `${tags.username} ${dimeMiRango(tags.badges)}`);
@@ -242,6 +252,7 @@ client.on('message', (channel, tags, message, self) => {
  */
 function helpMenu(lvl, menu, help){
     const main = {
+        'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
         'deftts': 'Establece el modo tts a hablar (por defecto: lento) para todo el chat y durante todo el stream. El -m es para el tts monguer y el -l es para el tts lento. EJ: !deftts -m, !deftts -l',
         'excluir':'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
         'incluir':'Revertirá las acciones del comando !excluir. EJ: !incluir anonymous',
@@ -266,7 +277,7 @@ function helpMenu(lvl, menu, help){
     };
 
     const broadcasterCMD = ['mostrarnr', 'rvidas'];
-    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts'];
+    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts', 'delete'];
 
     if(lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
     if(lvl == 1 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
