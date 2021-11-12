@@ -172,10 +172,10 @@ client.on('message', (channel, tags, message, self) => {
         const params = [channel, tags, message, '!tts', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
 
-        if(PREFER_TTS) {
+        if(PREFER_TTS && value) {
             googleTalkToMe(`${tags.username} dice ${value}`);
         }
-        else if(!PREFER_TTS){
+        else if(!PREFER_TTS && value){
             talkToMe(`${tags.username} dice ${value}`);
         }
         else console.error(channel, 'User in exclude list, no perms or unexpected error');
@@ -264,7 +264,10 @@ client.on('message', (channel, tags, message, self) => {
             break;
         case '!mostrarnr':
             if(tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem'))
-                client.say(channel, `El número es ${magicNumber}`);
+                console.log(channel, `El número es ${magicNumber}`);
+                if(isModWhoCalls(tags)){
+                    whisperClient.whisper(tags.username, `El número a adivinar es ${magicNumber}`);
+                }
             break;
         case '!creador':
             client.say(channel, 'El nombre de mi creador es @noctismaiestatem (twitch.tv/noctismaiestatem)');
