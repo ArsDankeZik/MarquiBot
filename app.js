@@ -14,7 +14,7 @@ const insultos = require('./insultos').insultos;
 
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
-const VERSION = '1.2.91';
+const VERSION = '1.2.92';
 var VOL = 0.60; // Controla el volumen de los sonidos !sonido
 var filepath = path.join(__dirname, 'prueba.wav');
 var magicNumber = getRandInt(1, 50);
@@ -298,6 +298,7 @@ function helpMenu(lvl, menu, help){
         'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
         'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
         'mostrarnr': 'Este comando enseñará el número a adivinar en el chat.',
+        'memide': 'Este comando calculará el tamaño de tu nepe y lo mostrará por el chat de manera graciosa',
         'dc': 'Enlace de invitación al servidor de Discord',
         'ig': 'Enlace del instagram de AlberMarqui',
         'tw': 'Enlace del twitter de AlberMarqui',
@@ -305,7 +306,7 @@ function helpMenu(lvl, menu, help){
         'help': 'Este comando te devolverá la lista de comandos disponibles acorde a tu rango en el chat. Sí lo acompañas de algún otro comando te mostrará una descripción de lo que hace el comando especificado. EJ: !help tts'
     };
 
-    const broadcasterCMD = ['mostrarnr', 'rvidas'];
+    const broadcasterCMD = ['mostrarnr', 'rvidas', 'delete'];
     const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts', 'delete'];
 
     if(lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
