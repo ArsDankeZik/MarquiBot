@@ -190,6 +190,7 @@ client.on('message', (channel, tags, message, self) => {
     if(message.toLowerCase().includes('!hora')){
         msg = message.replace('!hora', '').trim();
         console.log(msg);
+        if(msg.length < 2) return;
         client.say(channel, `${calculateHour(msg.toUpperCase())}`);
     }
 
