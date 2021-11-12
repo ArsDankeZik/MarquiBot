@@ -15,7 +15,7 @@ const insultos = require('./insultos').insultos;
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
 const VOL = 0.60; // Controla el volumen de los sonidos !sonido
-const VERSION = '1.2.9';
+const VERSION = '1.2.91';
 var filepath = path.join(__dirname, 'prueba.wav');
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
@@ -29,7 +29,7 @@ console.log(`El número a adivinar es: ${magicNumber}`);
 // Audio https://www.npmjs.com/package/speaker
 // Audio buffer https://www.npmjs.com/package/audio-buffer
 
-const client = new tmi.Client({
+const options = {
     options: { debug: true, messagesLogLevel: 'info'},
     connection: {
         reconnect: true,
@@ -40,7 +40,19 @@ const client = new tmi.Client({
         password: `oauth:${process.env.TWITCH_OAUTH}`
     },
     channels: [`${process.env.TWITCH_CHANNEL}`]
-});
+};
+
+const whisperOptions = {
+    options: options.options,
+    connection: {
+        cluster: 'group',
+        reconnect: true
+    },
+    identity: options.identity
+}
+
+const client = new tmi.Client(options);
+const whisperClient = new tmi.Client(whisperOptions);
 
 function googleTalkToMe(text){
     gtts.save(filepath, text, () => {
@@ -65,6 +77,7 @@ function cleanCommandListener(arr){
 }
 
 client.connect().catch(console.error);
+whisperClient.connect().catch(console.error);
 
 client.on('message', (channel, tags, message, self) => {
     if(self) return;
@@ -81,6 +94,7 @@ client.on('message', (channel, tags, message, self) => {
     if(msgIsCMD('!delete', message)){
         if(isModWhoCalls(tags)){
             console.log(tags);
+            whisperClient.whisper('noctismaiestatem', 'Utilizando el comando !delete');
             client.deletemessage(channel, tags.id);
         }
     }
