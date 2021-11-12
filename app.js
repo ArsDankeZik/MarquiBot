@@ -11,7 +11,6 @@ const sound = require('sound-play');
 const gtts = require('node-gtts')('es');
 const piropos = require('./piropos').piropos;
 const insultos = require('./insultos').insultos;
-const { getAudioDurationInSeconds } = require('get-audio-duration');
 
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
@@ -20,7 +19,9 @@ const VERSION = '1.2.8';
 var filepath = path.join(__dirname, 'prueba.wav');
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
-var OBJECT_PEOPLE_LIFES = {};
+OBJECT_PEOPLE_LIFES = {};
+EXCEPT_FROM_PERMISSION_LIST = [];
+var PREFER_TTS = true; // On true google on false talktome
 
 console.log(`El número a adivinar es: ${magicNumber}`);
 
@@ -47,35 +48,106 @@ function googleTalkToMe(text){
     });
 }
 
+function cleanCommandListener(arr){
+    [channel, tags, message, cmd, permission, permissionExceptions] = arr;
+    if(permission) {
+        if(!onlySubsAllowed(tags) || permissionExceptions.includes(tags.username)){
+            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+            return false;
+        }
+    }
+    msg = message.replace(cmd, '').toLowerCase().trim();    
+    if(msg.length == 0) return true;
+    if(msg.length > 0) return msg;
+
+    console.error('ERROR: Not expected to get at final of cleanCommandListener');
+    return false;
+}
+
 client.connect().catch(console.error);
 
 client.on('message', (channel, tags, message, self) => {
     if(self) return;
     if(tags.username.toLowerCase() === 'streamelements') return;
-    // console.log(tags);
-    
-    if(message.toLocaleLowerCase().includes('!ttsinsulto' && !message.toLocaleLowerCase().includes('v2'))){
-        msg = message.replace('!ttsinsulto', '');
-        onlySubsAllowed(tags) ? 
-            talkToMe(`${tags.username} dice ${pickRandom(insultos)}`) : 
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+    //Normalize cmd and check if include cmd
+    const msgIncludesCMD = (cmd, message) => message.toLocaleLowerCase().includes(cmd) ? true : false;
+    //Normalize cmd and check if cmd and message match
+    const msgIsCMD = (cmd, message) => message.toLowerCase().split(' ')[0] == cmd ? true : false;
+
+    //Restrict perms on user doesn't matter if have vip, sub, mod
+    const excludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST.push(user);
+    const deleteFromExcludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST.filter(r => r != user); 
+    const defTTSTemp = (v) => {
+        if(v == true) return;
+        if(v && v.split(' ')[0] && v.split(' ')[1] == 'monguer') PREFER_TTS = false;
+        if(v && v.split(' ')[0] && v.split(' ')[1] != 'monguer') PREFER_TTS = true;
     }
 
-    if(message.toLocaleLowerCase().includes('!ttspiropo') && !message.toLocaleLowerCase().includes('v2')){
-        // console.log(message);
-        msg = message.replace('!ttspiropo', '');
-        onlySubsAllowed(tags) ? 
-            talkToMe(`${tags.username} dice ${pickRandom(piropos)}`) : 
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+    if(msgIncludesCMD('!deftts', message)){
+        if(isModWhoCalls(tags)){
+            const params = [channel, tags, message, '!deftts', true, []];
+            const ttsMode = cleanCommandListener(params);
+            if(ttsMode && ttsMode == 'monguer') PREFER_TTS = false;
+            else if(ttsMode && ttsMode == 'lento') PREFER_TTS = true;
+        }
     }
 
-    if(message.toLocaleLowerCase().includes('!tts') && !message.toLocaleLowerCase().includes('v2') && !message.toLocaleLowerCase().includes('!ttsinsulto') && !message.toLocaleLowerCase().includes('!ttspiropo')){
-        // console.log(message);    
-        msg = message.replace('!tts', '');
-        onlySubsAllowed(tags) ? 
-            talkToMe(`${tags.username} dice ${msg}`)
-            // setBuffer(`${tags.username} dice ${msg}`) 
-            : client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+    if(msgIncludesCMD('!excluir', message)){
+        if(isModWhoCalls(tags)){
+            const params = [channel, tags, message, '!excluir', true, []];
+            const username = cleanCommandListener(params);
+            if(username) excludeFromPermissions(username);
+            else console.error(channel, 'Unexpected error');
+        }
+    }
+
+    if(msgIncludesCMD('!incluir', message)){
+        if(isModWhoCalls(tags)){
+            const params = [channel, tags, message, '!incluir', true, []];
+            const username = cleanCommandListener(params);
+            if(username) deleteFromExcludeFromPermissions(username);
+            else console.error(channel, 'Unexpected error');
+        }
+    }
+
+    if(msgIncludesCMD('!ttsinsulto', message)){
+        const params = [channel, tags, message, '!ttsinsulto', true, EXCEPT_FROM_PERMISSION_LIST];
+        const value = cleanCommandListener(params);
+        defTTSTemp(value);
+        if(PREFER_TTS && value){
+            googleTalkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
+        }
+        else if(!PREFER_TTS && value) {
+            talkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
+        }
+        else console.error(channel, 'User in exclude list, no perms or unexpected error');
+    }
+
+    if(msgIncludesCMD('!ttspiropo', message)){
+        const params = [channel, tags, message, '!ttspiropo', true, EXCEPT_FROM_PERMISSION_LIST];
+        const value = cleanCommandListener(params);
+        defTTSTemp(value);
+        if(PREFER_TTS && value){
+            googleTalkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
+        }
+        else if(!PREFER_TTS && value) {
+            talkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
+        }
+        else console.error(channel, 'User in exclude list, no perms or unexpected error');
+    }
+
+    if(msgIsCMD('!tts', message)){
+        const params = [channel, tags, message, '!tts', true, EXCEPT_FROM_PERMISSION_LIST];
+        const value = cleanCommandListener(params);
+        defTTSTemp(value);
+
+        if(PREFER_TTS) {
+            googleTalkToMe(`${tags.username} dice ${value}`);
+        }
+        else if(!PREFER_TTS){
+            talkToMe(`${tags.username} dice ${value}`);
+        }
+        else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
     if(message.toLocaleLowerCase().includes('!ttsinsultov2')){
@@ -168,6 +240,19 @@ client.on('message', (channel, tags, message, self) => {
         case '!vidas':
             client.say(channel, `${registerUserAndCount(tags.username)}`);
             break;
+        case '!dc':
+            client.say(channel, `https://discord.gg/d3xTjTwMXn`);
+            break;
+        case '!ig':
+            client.say(channel, `https://bit.ly/3ky9kv5`);
+            break;
+        case '!tw':
+            client.say(channel, `https://bit.ly/3Fb6vba`);
+            break;
+        case '!social':
+            client.say(channel, `DC: https://discord.gg/d3xTjTwMXn, IG: https://bit.ly/3ky9kv5, TW: https://bit.ly/3Fb6vba`);
+            break;
+
         case '!mostrarnr':
             if(tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem'))
                 client.say(channel, `El número es ${magicNumber}`);
@@ -188,6 +273,9 @@ client.on('message', (channel, tags, message, self) => {
  */
 function helpMenu(lvl, menu, help){
     const main = {
+        'deftts': 'Establece el modo tts a hablar (por defecto: lento) para todo el chat y todo el stream. EJ: !deftts monguer, !deftts lento',
+        'excluir':'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
+        'incluir':'Revertirá las acciones del comando !excluir. EJ: !incluir anonymous',
         'insulto': 'Devolverá al chat un insulto al azar',
         'piropo': 'Devolverá al chat un piropo al azar',
         'rango': 'Te dirá qué rango tienes',
@@ -202,11 +290,14 @@ function helpMenu(lvl, menu, help){
         'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
         'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
         'mostrarnr': 'Este comando enseñará el número a adivinar en el chat.',
+        'dc': 'Enlace de invitación al servidor de Discord',
+        'ig': 'Enlace del instagram de AlberMarqui',
+        'tw': 'Enlace del twitter de AlberMarqui',
         'help': 'Este comando te devolverá la lista de comandos disponibles acorde a tu rango en el chat. Sí lo acompañas de algún otro comando te mostrará una descripción de lo que hace el comando especificado. EJ: !help tts'
     };
 
     const broadcasterCMD = ['mostrarnr', 'rvidas'];
-    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo'];
+    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts'];
 
     if(lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
     if(lvl == 1 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
@@ -328,6 +419,16 @@ function talkToMe(text){
     let childD = proc.spawn('powershell', commands, options);
     text = encodeRust(text);
     childD.stdin.end(iconv.encode(text, 'UTF-8'));
+}
+
+
+function isBroadcasterWhoCalls(tags){
+    if((tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('broadcaster') && tags.badges.broadcaster === '1') || tags.username.toLowerCase() == 'noctismaiestatem') return true;
+}
+
+function isModWhoCalls(tags){
+    if(isBroadcasterWhoCalls(tags)) return true;
+    if(tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('moderator')) return true;
 }
 
 function onlySubsAllowed(tags){
