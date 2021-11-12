@@ -14,8 +14,8 @@ const insultos = require('./insultos').insultos;
 
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
-const VOL = 0.60; // Controla el volumen de los sonidos !sonido
 const VERSION = '1.2.91';
+var VOL = 0.60; // Controla el volumen de los sonidos !sonido
 var filepath = path.join(__dirname, 'prueba.wav');
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
