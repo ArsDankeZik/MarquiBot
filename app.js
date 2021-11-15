@@ -98,7 +98,7 @@ client.on('message', (channel, tags, message, self) => {
             const params = [channel, tags, message, '!volumen', true, []];
             const value = cleanCommandListener(params);
 
-            if(value) setVolume(parseFloat(value));
+            if (value) setVolume(parseFloat(value));
             else console.error(channel, 'User in exclude list, no perms or unexpected error');
         }
     }
@@ -209,11 +209,18 @@ client.on('message', (channel, tags, message, self) => {
         case '!insulto':
             client.say(channel, `${pickRandom(insultos)}`);
             break;
+        case '!nomefunciona':
+            logBadPerms(tags);
+            break;
         case '!log':
             if (tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('broadcaster')) {
                 console.log(message);
                 console.log(tags);
             }
+            break;
+        case '!log-user':
+            console.log(message);
+            console.log(tags);
             break;
         case '!rango':
             client.say(channel, `${tags.username} ${dimeMiRango(tags.badges)}`);
@@ -262,6 +269,7 @@ client.on('message', (channel, tags, message, self) => {
 function helpMenu(lvl, menu, help) {
     const main = {
         // 'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
+        'nomefunciona': 'Esto registrará que a vosotros no os funciona algún comando que requiera de permisos de suscriptor o vip',
         'volumen': 'Establece el volumen de voz del bot, rango permitido 0.00 - 1.00 EJ: !volumen 0.95',
         'deftts': 'Establece el modo tts a hablar (por defecto: lento) para todo el chat y durante todo el stream. El -m es para el tts monguer y el -l es para el tts lento. EJ: !deftts -m, !deftts -l',
         'excluir': 'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
@@ -305,8 +313,8 @@ function helpMenu(lvl, menu, help) {
     return 'Hmmm. No debería haber pasado esto, avisa a @NoctisMaiestatem. Mientras tanto reinicia el bot.';
 }
 
-function setVolume(n){
-    (n >= 0.0 && n <= 2.0) ? VOL = n : VOL = 0.85; 
+function setVolume(n) {
+    (n >= 0.0 && n <= 2.0) ? VOL = n: VOL = 0.85;
     console.log(`New volume set to: ${VOL}`);
 }
 
@@ -316,7 +324,18 @@ function googleTalkToMe(text) {
     });
 }
 
-function defineVoiceForUser(userVoice){
+function logBadPerms(tags) {
+    let logger = fs.createWriteStream('nofuncionaparausuarios.json', {
+        flags: 'a',
+    });
+
+    logger.once('open', () => {
+        logger.write(JSON.stringify(tags));
+        logger.end();
+    });
+}
+
+function defineVoiceForUser(userVoice) {
     const getRandomPitch = (min, max) => {
         return (Math.random() * (min - max) + max).toFixed(2);
     };
@@ -328,20 +347,16 @@ function defineVoiceForUser(userVoice){
     const getRandomVoice = () => ['Helena', 'Pablo', 'Laura'][getRandInt(0, 2)];
 
 
-    if(USER_OBJECT && !USER_OBJECT.hasOwnProperty(userVoice.user)){
+    if (USER_OBJECT && !USER_OBJECT.hasOwnProperty(userVoice.user)) {
         USER_OBJECT[userVoice.user] = {
             rate: getRandomRate(1.25, 1.65),
             pitch: getRandomPitch(0.10, 1.25),
             voice: getRandomVoice()
         };
-        // console.log('Registrando un nuevo usuario');
         return `http://localhost:3000/client?msg=${userVoice.msg}&voice=${USER_OBJECT[userVoice.user].voice}&rate=${USER_OBJECT[userVoice.user].rate}&pitch=${USER_OBJECT[userVoice.user].pitch}&volume=${VOL}&to=embian`;
-    }
-    else if(USER_OBJECT && USER_OBJECT.hasOwnProperty(userVoice.user)){
-        // console.log('Utilizando los valores existentes para el usuario'+userVoice.user);
+    } else if (USER_OBJECT && USER_OBJECT.hasOwnProperty(userVoice.user)) {
         return `http://localhost:3000/client?msg=${userVoice.msg}&voice=${USER_OBJECT[userVoice.user].voice}&rate=${USER_OBJECT[userVoice.user].rate}&pitch=${USER_OBJECT[userVoice.user].pitch}&volume=${VOL}&to=embian`;
-    }
-    else return false;
+    } else return false;
 }
 
 function cleanCommandListener(arr) {
@@ -360,12 +375,12 @@ function cleanCommandListener(arr) {
     return false;
 }
 
-function talkToLocal(username, text){
+function talkToLocal(username, text) {
     text = text.toLowerCase();
     const RESTRICTED_WORDS = ['nigga', 'negro', 'negrata', 'puta', 'furcia', 'guarra', 'zorra', 'gay', 'maricón'];
 
     text.split(' ').forEach(word => {
-        if(RESTRICTED_WORDS.includes(word)){
+        if (RESTRICTED_WORDS.includes(word)) {
             text = text.replace(word, 'impronunciable');
         }
     });
@@ -376,12 +391,10 @@ function talkToLocal(username, text){
         msg: text,
     });
 
-    if(url) {
+    if (url) {
         axios.get(encodeURI(url)).catch(err => console.error(err));
-    }
-    else console.error(url);
+    } else console.error(url);
 }
-
 
 function registerUserAndCount(name, opt) {
     const totalLifes = 6;
@@ -495,7 +508,6 @@ function checkFileExists(path) {
         console.error(err);
         return false;
     }
-
     return false;
 }
 
@@ -511,7 +523,6 @@ function playSound(w) {
         const localPath = `sounds/${element}.mp3`
         if (!checkFileExists(localPath)) downloadFile(`${encodeURI(baseURL)}${encodeURI(element)}.mp3`, localPath);
     });
-
 
     if (w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
     if (w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
@@ -538,9 +549,9 @@ function dimeMiRango(badge) {
 
 function pickRandom(arr) {
     const min = 0;
-    const max = arr ? arr.length-1 : 0;
+    const max = arr ? arr.length - 1 : 0;
     const rand = () => (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) % (max - min + 1)) + min;
-    
+
     return arr[rand()];
 }
 

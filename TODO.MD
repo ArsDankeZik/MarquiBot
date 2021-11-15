@@ -1,12 +1,5 @@
 - AHORCADO
 - Incorporar audio de alv, bro, ufo, wassaaaaaaa
-- Mejorar el sistema de jugadores(usuarios). Creación de un objeto usuario que guarde más información acerca del mismo.
-
-let Usuario = {
-    nombre: 'noctismaiestaem',
-    tipo: 'mod',
-    vidas: 6,
-    historialComandos: ['sonido', 'help', 'adivinarelnr'],
-    vol: 0.70,
-    }
-};
+- El tema de los permisos con subs etc sigue sin funcionar bien 
+- Caliente, frío, adivinar el nr
+- Enviar mensaje a @everyone en dc al abrir el bot

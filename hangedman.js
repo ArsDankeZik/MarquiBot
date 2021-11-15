@@ -11,8 +11,6 @@ function adivinar(char){
     }
 }
 
-
-
 function pickRandom(arr) {
     const min = 0;
     const max = arr ? arr.length-1 : 0;
