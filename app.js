@@ -1,9 +1,8 @@
 require('dotenv').config();
+
 const tmi = require('tmi.js');
 const iconv = require('iconv-lite');
 const proc = require('child_process');
-const ct = require('countries-and-timezones');
-const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
 const request = require('request');
@@ -11,26 +10,29 @@ const sound = require('sound-play');
 const gtts = require('node-gtts')('es');
 const piropos = require('./piropos').piropos;
 const insultos = require('./insultos').insultos;
+const axios = require('axios');
 
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
-const VERSION = '1.2.92';
-var VOL = 0.60; // Controla el volumen de los sonidos !sonido
+const VERSION = '1.3.0';
+var VOL = 0.85; // Controla el volumen de los sonidos !sonido
 var filepath = path.join(__dirname, 'prueba.wav');
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
 OBJECT_PEOPLE_LIFES = {};
+USER_OBJECT = {};
 EXCEPT_FROM_PERMISSION_LIST = [];
 var PREFER_TTS = true; // On true google on false talktome
 
 console.log(`El número a adivinar es: ${magicNumber}`);
 
 // LINK PARA HACER IMPLEMENTAR CANJEAR POR PUNTOS https://www.twitch.tv/videos/806178796?collection=E1yJPFFiSBZBrQ
-// Audio https://www.npmjs.com/package/speaker
-// Audio buffer https://www.npmjs.com/package/audio-buffer
 
 const options = {
-    options: { debug: true, messagesLogLevel: 'info'},
+    options: {
+        debug: true,
+        messagesLogLevel: 'info'
+    },
     connection: {
         reconnect: true,
         secure: true
@@ -54,35 +56,12 @@ const whisperOptions = {
 const client = new tmi.Client(options);
 const whisperClient = new tmi.Client(whisperOptions);
 
-
-function googleTalkToMe(text){
-    gtts.save(filepath, text, () => {
-        sound.play(path.join(__dirname, "prueba.wav"), VOL); 
-    });
-}
-
-function cleanCommandListener(arr){
-    [channel, tags, message, cmd, permission, permissionExceptions] = arr;
-    if(permission) {
-        if(!onlySubsAllowed(tags) || permissionExceptions.includes(tags.username)){
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
-            return false;
-        }
-    }
-    msg = message.replace(cmd, '').toLowerCase().trim();    
-    if(msg.length == 0) return true;
-    if(msg.length > 0) return msg;
-
-    console.error('ERROR: Not expected to get at final of cleanCommandListener');
-    return false;
-}
-
 client.connect().catch(console.error);
 whisperClient.connect().catch(console.error);
 
 client.on('message', (channel, tags, message, self) => {
-    if(self) return;
-    if(tags.username.toLowerCase() === 'streamelements') return;
+    if (self) return;
+    if (tags.username.toLowerCase() === 'streamelements') return;
     //Normalize cmd and check if include cmd
     const msgIncludesCMD = (cmd, message) => message.toLowerCase().includes(cmd) ? true : false;
     //Normalize cmd and check if cmd and message match
@@ -90,147 +69,148 @@ client.on('message', (channel, tags, message, self) => {
 
     //Restrict perms on user doesn't matter if have vip, sub, mod
     const excludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST.push(user);
-    const deleteFromExcludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST.filter(r => r != user); 
+    const deleteFromExcludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST.filter(r => r != user);
 
-    if(msgIsCMD('!delete', message)){
-        if(isModWhoCalls(tags)){
+    if (msgIsCMD('!delete', message)) {
+        if (isModWhoCalls(tags)) {
             console.log(tags);
             whisperClient.whisper('noctismaiestatem', 'Utilizando el comando !delete');
             client.deletemessage(channel, tags.id);
         }
     }
 
-    if(msgIncludesCMD('!memide', message)){
-        const params = [channel, tags, message, '!excluir', true, []];
+    if (msgIncludesCMD('!memide', message)) {
+        const params = [channel, tags, message, '!memide', true, []];
         const value = cleanCommandListener('!memide', []);
         const memide = getRandInt(1, 35);
         const frase = (cm) => {
-            if(cm > 0 && cm <= 13) return `Según la RAE tu pene de ${cm} cm pasa a ser una pena`;
-            else if(cm > 13 && cm <= 22) return `Tu pene de ${cm} cm no es para tanto a no ser que sepas usarlo`;
-            else if(cm > 22 && cm <= 35) return `Este pene de ${cm} cm está hecho para matar y no para dar placer`;
+            if (cm > 0 && cm <= 13) return `Según la RAE tu pene de ${cm} cm pasa a ser una pena`;
+            else if (cm > 13 && cm <= 22) return `Tu pene de ${cm} cm no es para tanto a no ser que sepas usarlo`;
+            else if (cm > 22 && cm <= 35) return `Este pene de ${cm} cm está hecho para matar y no para dar placer`;
             else return `No he podido calcular tu pene`;
         }
 
         client.say(channel, `@${tags.username}: ${frase(memide)}`);
     }
 
-    if(msgIncludesCMD('!deftts', message)){
-        if(isModWhoCalls(tags)){
+    if (msgIncludesCMD('!volumen', message)) {
+        if (isModWhoCalls(tags)) {
+            const params = [channel, tags, message, '!volumen', true, []];
+            const value = cleanCommandListener(params);
+
+            if(value) setVolume(parseFloat(value));
+            else console.error(channel, 'User in exclude list, no perms or unexpected error');
+        }
+    }
+
+    if (msgIncludesCMD('!deftts', message)) {
+        if (isModWhoCalls(tags)) {
             const params = [channel, tags, message, '!deftts', true, []];
             const ttsMode = cleanCommandListener(params);
-            if(ttsMode && ttsMode == '-m') PREFER_TTS = false;
-            else if(ttsMode && ttsMode == '-l') PREFER_TTS = true;
+            if (ttsMode && ttsMode == '-m') PREFER_TTS = false;
+            else if (ttsMode && ttsMode == '-l') PREFER_TTS = true;
+            else console.error(channel, 'User in exclude list, no perms or unexpected error');
         }
     }
 
-    if(msgIncludesCMD('!excluir', message)){
-        if(isModWhoCalls(tags)){
+    if (msgIncludesCMD('!excluir', message)) {
+        if (isModWhoCalls(tags)) {
             const params = [channel, tags, message, '!excluir', true, []];
             const username = cleanCommandListener(params);
-            if(username) excludeFromPermissions(username);
-            else console.error(channel, 'Unexpected error');
+            if (username) excludeFromPermissions(username);
+            else console.error(channel, 'User in exclude list, no perms or unexpected error');
         }
     }
 
-    if(msgIncludesCMD('!incluir', message)){
-        if(isModWhoCalls(tags)){
+    if (msgIncludesCMD('!incluir', message)) {
+        if (isModWhoCalls(tags)) {
             const params = [channel, tags, message, '!incluir', true, []];
             const username = cleanCommandListener(params);
-            if(username) deleteFromExcludeFromPermissions(username);
-            else console.error(channel, 'Unexpected error');
+            if (username) deleteFromExcludeFromPermissions(username);
+            else console.error(channel, 'User in exclude list, no perms or unexpected error');
         }
     }
 
-    if(msgIncludesCMD('!ttsinsulto', message)){
+    if (msgIncludesCMD('!ttsinsulto', message)) {
         const params = [channel, tags, message, '!ttsinsulto', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
 
-        if(PREFER_TTS && value){
-            googleTalkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
-        }
-        else if(!PREFER_TTS && value) {
+        if (PREFER_TTS && value) {
+            // googleTalkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
+            talkToLocal(tags.username, pickRandom(insultos));
+        } else if (!PREFER_TTS && value) {
             talkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
-        }
-        else console.error(channel, 'User in exclude list, no perms or unexpected error');
+        } else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
-    if(msgIncludesCMD('!ttspiropo', message)){
+    if (msgIncludesCMD('!ttspiropo', message)) {
         const params = [channel, tags, message, '!ttspiropo', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
 
-        if(PREFER_TTS && value){
-            googleTalkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
-        }
-        else if(!PREFER_TTS && value) {
+        if (PREFER_TTS && value) {
+            // googleTalkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
+            talkToLocal(tags.username, pickRandom(piropos));
+        } else if (!PREFER_TTS && value) {
             talkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
-        }
-        else console.error(channel, 'User in exclude list, no perms or unexpected error');
+        } else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
-    if(msgIsCMD('!tts', message)){
+    if (msgIsCMD('!tts', message)) {
         const params = [channel, tags, message, '!tts', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
 
-        if(PREFER_TTS && value) {
-            googleTalkToMe(`${tags.username} dice ${value}`);
-        }
-        else if(!PREFER_TTS && value){
+        if (PREFER_TTS && value) {
+            // googleTalkToMe(`${tags.username} dice ${value}`);
+            talkToLocal(tags.username, value);
+        } else if (!PREFER_TTS && value) {
             talkToMe(`${tags.username} dice ${value}`);
-        }
-        else console.error(channel, 'User in exclude list, no perms or unexpected error');
+        } else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
-    if(message.toLowerCase().includes('!sonido')){
+    if (message.toLowerCase().includes('!sonido')) {
         msg = message.replace('!sonido', '').trim();
-        onlySubsAllowed(tags) ? 
-            playSound(`${msg}`) : 
+        onlySubsAllowed(tags) ?
+            playSound(`${msg}`) :
             client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
     }
 
-    if(message.toLowerCase().includes('!hora')){
-        msg = message.replace('!hora', '').trim();
-        console.log(msg);
-        if(msg.length < 2) return;
-        client.say(channel, `${calculateHour(msg.toUpperCase())}`);
-    }
-
-    if(message.toLowerCase().includes('!adivinaelnr')){
+    if (message.toLowerCase().includes('!adivinaelnr')) {
         msg = message.replace('!adivinaelnr', '').trim();
         client.say(channel, `${takeAGuess(msg, tags.username)}`);
     }
 
-    if(message.toLowerCase().includes('!rvidas')){
+    if (message.toLowerCase().includes('!rvidas')) {
         msg = message.replace('!rvidas', '').trim();
-        if(tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem')){
+        if (tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem')) {
             console.log(msg);
-            if(!msg || msg.length == 0) client.say(channel, `El comando es !rvidas usuario`);
+            if (!msg || msg.length == 0) client.say(channel, `El comando es !rvidas usuario`);
             else client.say(channel, `${registerUserAndCount(msg, 'reset')}`);
         }
     }
 
-    if(message.toLowerCase().includes('!help')){
+    if (message.toLowerCase().includes('!help')) {
         msg = message.replace('!help', '').trim();
         msg = msg.replace('!', '');
         menu = msg.length == 0;
-        
+
         const checkLVL = (tags) => {
-            if(tags.badges != null && tags.badges != undefined){
-                if(tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem') return 2;
-                if(tags.badges.hasOwnProperty('vip') || tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('founder') || tags.badges.hasOwnProperty('premium')) return 1;
+            if (tags.badges != null && tags.badges != undefined) {
+                if (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem') return 2;
+                if (tags.badges.hasOwnProperty('vip') || tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('founder') || tags.badges.hasOwnProperty('premium')) return 1;
             }
             return 0;
         };
 
-        if(menu) client.say(channel, `Escribe !help comando(sustituye comando por el comando que quieras consultar, no me seas borrego) para saber más acerca de un comando. Comandos disponibles: ${helpMenu(checkLVL(tags), true, null)}`);
-        if(!menu) client.say(channel, `${helpMenu(checkLVL(tags), false, msg)}`); 
+        if (menu) client.say(channel, `Escribe !help comando(sustituye comando por el comando que quieras consultar, no me seas borrego) para saber más acerca de un comando. Comandos disponibles: ${helpMenu(checkLVL(tags), true, null)}`);
+        if (!menu) client.say(channel, `${helpMenu(checkLVL(tags), false, msg)}`);
     }
-    
-    switch(message.toLowerCase()){
-        case '!insulto': 
+
+    switch (message.toLowerCase()) {
+        case '!insulto':
             client.say(channel, `${pickRandom(insultos)}`);
             break;
         case '!log':
-            if(tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('broadcaster')) {
+            if (tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('broadcaster')) {
                 console.log(message);
                 console.log(tags);
             }
@@ -263,8 +243,8 @@ client.on('message', (channel, tags, message, self) => {
             client.say(channel, `DC: https://discord.gg/d3xTjTwMXn, IG: https://bit.ly/3ky9kv5, TW: https://bit.ly/3Fb6vba`);
             break;
         case '!mostrarnr':
-            if(tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem'))
-            if(isModWhoCalls(tags)) console.log(channel, `El número es ${magicNumber}`);
+            if (tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem'))
+                if (isModWhoCalls(tags)) console.log(channel, `El número es ${magicNumber}`);
             break;
         case '!creador':
             client.say(channel, 'El nombre de mi creador es @noctismaiestatem (twitch.tv/noctismaiestatem)');
@@ -279,18 +259,18 @@ client.on('message', (channel, tags, message, self) => {
  * @param {*} help command to show help [optional]
  * @returns 
  */
-function helpMenu(lvl, menu, help){
+function helpMenu(lvl, menu, help) {
     const main = {
-        'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
+        // 'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
+        'volumen': 'Establece el volumen de voz del bot, rango permitido 0.00 - 1.00 EJ: !volumen 0.95',
         'deftts': 'Establece el modo tts a hablar (por defecto: lento) para todo el chat y durante todo el stream. El -m es para el tts monguer y el -l es para el tts lento. EJ: !deftts -m, !deftts -l',
-        'excluir':'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
-        'incluir':'Revertirá las acciones del comando !excluir. EJ: !incluir anonymous',
+        'excluir': 'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
+        'incluir': 'Revertirá las acciones del comando !excluir. EJ: !incluir anonymous',
         'insulto': 'Devolverá al chat un insulto al azar',
         'piropo': 'Devolverá al chat un piropo al azar',
         'rango': 'Te dirá qué rango tienes',
         'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
         'dado': 'Devolverá un número al azar entre el uno y el seis',
-        'hora': '!hora ES devolverá la hora de las distintas zonas horarias dentro de un país (si no te sabes el código de tu país búsca en google: ISO 3166-1 alfa-2)',
         'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, recalculando, risatos, siuuu, estas tocandome, notificacion) según le indiques. EJ: !sonido bofeton',
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
@@ -308,16 +288,16 @@ function helpMenu(lvl, menu, help){
     };
 
     const broadcasterCMD = ['mostrarnr', 'rvidas', 'delete'];
-    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts', 'delete'];
+    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts', 'delete', 'volumen'];
 
-    if(lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
-    if(lvl == 1 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).map(cmd => '!'+cmd).join(', ');
-    if(lvl == 2 && menu == true) return Object.keys(main).map(cmd => '!'+cmd).join(', ');
+    if (lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!' + cmd).join(', ');
+    if (lvl == 1 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).map(cmd => '!' + cmd).join(', ');
+    if (lvl == 2 && menu == true) return Object.keys(main).map(cmd => '!' + cmd).join(', ');
 
-    if(menu == false && help && main.hasOwnProperty(help)) {
-        if(lvl == 0 && !broadcasterCMD.includes(help) && !specialsCMD.includes(help)) return main[help];
-        if(lvl == 1 && !broadcasterCMD.includes(help)) return main[help];
-        if(lvl == 2) return main[help];
+    if (menu == false && help && main.hasOwnProperty(help)) {
+        if (lvl == 0 && !broadcasterCMD.includes(help) && !specialsCMD.includes(help)) return main[help];
+        if (lvl == 1 && !broadcasterCMD.includes(help)) return main[help];
+        if (lvl == 2) return main[help];
 
         return 'No tienes permisos para ejecutar la ayuda de este comando';
     } else return `No existe el comando ${help} o lo has escrito mal`;
@@ -325,38 +305,116 @@ function helpMenu(lvl, menu, help){
     return 'Hmmm. No debería haber pasado esto, avisa a @NoctisMaiestatem. Mientras tanto reinicia el bot.';
 }
 
-function registerUserAndCount(name, opt){
+function setVolume(n){
+    (n >= 0.0 && n <= 2.0) ? VOL = n : VOL = 0.85; 
+    console.log(`New volume set to: ${VOL}`);
+}
+
+function googleTalkToMe(text) {
+    gtts.save(filepath, text, () => {
+        sound.play(path.join(__dirname, "prueba.wav"), VOL);
+    });
+}
+
+function defineVoiceForUser(userVoice){
+    const getRandomPitch = (min, max) => {
+        return (Math.random() * (min - max) + max).toFixed(2);
+    };
+
+    const getRandomRate = (min, max) => {
+        return (Math.random() * (min - max) + max).toFixed(2);
+    };
+
+    const getRandomVoice = () => ['Helena', 'Pablo', 'Laura'][getRandInt(0, 2)];
+
+
+    if(USER_OBJECT && !USER_OBJECT.hasOwnProperty(userVoice.user)){
+        USER_OBJECT[userVoice.user] = {
+            rate: getRandomRate(1.25, 1.65),
+            pitch: getRandomPitch(0.10, 1.25),
+            voice: getRandomVoice()
+        };
+        // console.log('Registrando un nuevo usuario');
+        return `http://localhost:3000/client?msg=${userVoice.msg}&voice=${USER_OBJECT[userVoice.user].voice}&rate=${USER_OBJECT[userVoice.user].rate}&pitch=${USER_OBJECT[userVoice.user].pitch}&volume=${VOL}&to=embian`;
+    }
+    else if(USER_OBJECT && USER_OBJECT.hasOwnProperty(userVoice.user)){
+        // console.log('Utilizando los valores existentes para el usuario'+userVoice.user);
+        return `http://localhost:3000/client?msg=${userVoice.msg}&voice=${USER_OBJECT[userVoice.user].voice}&rate=${USER_OBJECT[userVoice.user].rate}&pitch=${USER_OBJECT[userVoice.user].pitch}&volume=${VOL}&to=embian`;
+    }
+    else return false;
+}
+
+function cleanCommandListener(arr) {
+    [channel, tags, message, cmd, permission, permissionExceptions] = arr;
+    if (permission) {
+        if (!onlySubsAllowed(tags) || permissionExceptions.includes(tags.username)) {
+            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+            return false;
+        }
+    }
+    msg = message.replace(cmd, '').toLowerCase().trim();
+    if (msg.length == 0) return true;
+    if (msg.length > 0) return msg;
+
+    console.error('ERROR: Not expected to get at final of cleanCommandListener');
+    return false;
+}
+
+function talkToLocal(username, text){
+    text = text.toLowerCase();
+    const RESTRICTED_WORDS = ['nigga', 'negro', 'negrata', 'puta', 'furcia', 'guarra', 'zorra', 'gay', 'maricón'];
+
+    text.split(' ').forEach(word => {
+        if(RESTRICTED_WORDS.includes(word)){
+            text = text.replace(word, 'impronunciable');
+        }
+    });
+
+    text = `${username} dice ${text}`;
+    let url = defineVoiceForUser({
+        user: username,
+        msg: text,
+    });
+
+    if(url) {
+        axios.get(encodeURI(url)).catch(err => console.error(err));
+    }
+    else console.error(url);
+}
+
+
+function registerUserAndCount(name, opt) {
     const totalLifes = 6;
 
-    if(!OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
+    if (!OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
 
-    if(opt === 'reset' && OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
-    if(OBJECT_PEOPLE_LIFES[name] == 0) return false;
+    if (opt === 'reset' && OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
+    if (OBJECT_PEOPLE_LIFES[name] == 0) return false;
 
-    if(opt === 'rest') OBJECT_PEOPLE_LIFES[name] -= 1;
-    if(opt === 'sum') OBJECT_PEOPLE_LIFES[name] += 1;
+    if (opt === 'rest') OBJECT_PEOPLE_LIFES[name] -= 1;
+    if (opt === 'sum') OBJECT_PEOPLE_LIFES[name] += 1;
 
     return `Te quedan ${OBJECT_PEOPLE_LIFES[name]}`;
 }
 
 // @TODO: En un futuro añadir 3 vidas y cuando se acaben ya no poder jugar más en ese stream
 // Eso supondrá que necesitaremos otra función que devuelvan las vidas de cada uno de los usuarios
-function takeAGuess(nr, name){
+function takeAGuess(nr, name) {
     const min = 1;
     const max = 50;
     const errMessage = `Tienes que introducir un número entre el ${min} y el ${max}`;
-    nr = parseInt(nr); 
+    nr = parseInt(nr);
     console.log(`El usuario ha introducido: ${nr}`);
 
-    if(!nr) return errMessage;
-    if(nr > max) return errMessage;
-    if(nr < min) return errMessage;
-    if(registerUserAndCount(name) == false) return `@${name} has muerto en una feroz batalla, más suerte la próxima vez, máquina.`;
+    if (!nr) return errMessage;
+    if (nr > max) return errMessage;
+    if (nr < min) return errMessage;
+    if (registerUserAndCount(name) == false) return `@${name} has muerto en una feroz batalla, más suerte la próxima vez, máquina.`;
 
-    if(nr == magicNumber) {
+    if (nr == magicNumber) {
         previousNumber = magicNumber;
         do {
-            magicNumber=getRandInt(min, max);
+            magicNumber = getRandInt(min, max);
         } while (magicNumber == previousNumber);
         console.log(`El nuevo número que se ha generado es el ${magicNumber}`);
         registerUserAndCount(name, 'sum');
@@ -372,34 +430,7 @@ function getRandInt(minimum, maximum) {
     return Math.floor(Math.random() * (maximum - minimum)) + minimum;
 }
 
-// addOrSubMinutes(-120)
-// addOrSubMinutes(120)
-function addOrSubMinutes(min){
-    return moment().add(min, 'minutes').toDate();
-}
-
-function calculateHour(tzone){    
-    let minutesToAdd = [];
-    let names = [];
-    let country = ct.getCountry(tzone); //RO, ES 
-
-    country.timezones.forEach(timezone => {
-        minutesToAdd.push((ct.getTimezone(timezone)).utcOffset);
-        names.push((ct.getTimezone(timezone)).name);
-    });
-
-    let finalHours = [];
-    minutesToAdd.forEach(zone => finalHours.push(moment(addOrSubMinutes(zone)).utc().format('HH:hh')));
-    let str = '';
-    finalHours.forEach((f, i) => {
-        if(i == 0) str+=`${names[i].split('/').pop().replace('_', ' ')} - ${f}`;
-        else str+=`, ${names[i].split('/').pop().replace('_', ' ')} - ${f}`;
-    });
-    return str;
-}
-// console.log(calculateHour('RU'));
-
-function encodeRust(text){
+function encodeRust(text) {
     text = text.toLowerCase();
     text = text.replace('á', 'a');
     text = text.replace('í', 'i');
@@ -416,103 +447,106 @@ function encodeRust(text){
     return text;
 }
 
-function talkToMe(text){
-    if(process.platform != 'win32'){
+function talkToMe(text) {
+    if (process.platform != 'win32') {
         console.log('No funcionará en otra plataforma que no sea Windows');
         return;
     }
-    if(text == undefined || text.length == 0) return;
-    let commands = [ 'Add-Type -AssemblyName System.speech; $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; $speak.Rate = 1.2; $speak.Speak([Console]::In.ReadToEnd())' ];
-    let options = { shell: true };
+    if (text == undefined || text.length == 0) return;
+    let commands = ['Add-Type -AssemblyName System.speech; $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; $speak.Rate = 1.2; $speak.Speak([Console]::In.ReadToEnd())'];
+    let options = {
+        shell: true
+    };
     let childD = proc.spawn('powershell', commands, options);
     text = encodeRust(text);
     childD.stdin.end(iconv.encode(text, 'UTF-8'));
 }
 
 
-function isBroadcasterWhoCalls(tags){
-    if((tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('broadcaster') && tags.badges.broadcaster === '1') || tags.username.toLowerCase() == 'noctismaiestatem') return true;
+function isBroadcasterWhoCalls(tags) {
+    if ((tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('broadcaster') && tags.badges.broadcaster === '1') || tags.username.toLowerCase() == 'noctismaiestatem') return true;
 }
 
-function isModWhoCalls(tags){
-    if(isBroadcasterWhoCalls(tags)) return true;
-    if(tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('moderator')) return true;
+function isModWhoCalls(tags) {
+    if (isBroadcasterWhoCalls(tags)) return true;
+    if (tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('moderator')) return true;
 }
 
-function onlySubsAllowed(tags){
-    if(!SUBS) return true;
+function onlySubsAllowed(tags) {
+    if (!SUBS) return true;
 
-    if(tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('broadcaster') && tags.badges.broadcaster === '1') return true;
+    if (tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('broadcaster') && tags.badges.broadcaster === '1') return true;
 
-    if(tags.badges != null && tags.badges != undefined){
-        if(tags.badges.hasOwnProperty('vip')) return true;
-        if(tags.badges.hasOwnProperty('moderator')) return true;
-        if(tags.badges.hasOwnProperty('founder')) return true;
-        if(tags.badges.hasOwnProperty('suscriber')) return true;
+    if (tags.badges != null && tags.badges != undefined) {
+        if (tags.badges.hasOwnProperty('vip')) return true;
+        if (tags.badges.hasOwnProperty('moderator')) return true;
+        if (tags.badges.hasOwnProperty('founder')) return true;
+        if (tags.badges.hasOwnProperty('suscriber')) return true;
         // if(tags.badges.hasOwnProperty('premium')) return true;
     }
 }
- 
-function checkFileExists(path){
+
+function checkFileExists(path) {
     try {
         if (fs.existsSync(path)) {
-          return true;
+            return true;
         }
-      } catch(err) {
+    } catch (err) {
         console.error(err);
         return false;
-      }
+    }
 
-      return false;
+    return false;
 }
 
-function downloadFile(url, pathToSave){
+function downloadFile(url, pathToSave) {
     request(url).pipe(fs.createWriteStream(pathToSave));
 }
 
-function playSound(w){
+function playSound(w) {
     const baseURL = 'https://github.com/ArsDankeZik/MarquiBot/raw/main/sounds/';
     const nameFiles = 'gemido,alertasubnormal,aplausosniños,bofetón,estastocandome,gota,pedo_mojado,pedo_normal,recalculando,risacontos,siuuu,sorpresa_aplausos,suspense,whatsappweb'.split(',');
 
     nameFiles.forEach(element => {
         const localPath = `sounds/${element}.mp3`
-        if(!checkFileExists(localPath)) downloadFile(`${encodeURI(baseURL)}${encodeURI(element)}.mp3`, localPath);
+        if (!checkFileExists(localPath)) downloadFile(`${encodeURI(baseURL)}${encodeURI(element)}.mp3`, localPath);
     });
-    
-    
-    if(w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
-    if(w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
-    if(w === 'pedomojado') sound.play(path.join(__dirname, "sounds/pedo_mojado.mp3"), VOL);
-    if(w === 'gota') sound.play(path.join(__dirname, "sounds/gota.mp3"), VOL);
-    if(w === 'aplausos niños') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
-    if(w === 'alertasubnormal') sound.play(path.join(__dirname, "sounds/alertasubnormal.mp3"), VOL);
-    if(w === 'recalculando') sound.play(path.join(__dirname, "sounds/recalculando.mp3"), VOL);
-    if(w === 'risatos') sound.play(path.join(__dirname, "sounds/risacontos.mp3"), VOL);
-    if(w === 'siuuu') sound.play(path.join(__dirname, "sounds/siuuu.mp3"), VOL);
-    if(w === 'estas tocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
-    if(w === 'notificacion') sound.play(path.join(__dirname, "sounds/whatsappweb.mp3"), VOL);
+
+
+    if (w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
+    if (w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
+    if (w === 'pedomojado') sound.play(path.join(__dirname, "sounds/pedo_mojado.mp3"), VOL);
+    if (w === 'gota') sound.play(path.join(__dirname, "sounds/gota.mp3"), VOL);
+    if (w === 'aplausos niños') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
+    if (w === 'alertasubnormal') sound.play(path.join(__dirname, "sounds/alertasubnormal.mp3"), VOL);
+    if (w === 'recalculando') sound.play(path.join(__dirname, "sounds/recalculando.mp3"), VOL);
+    if (w === 'risatos') sound.play(path.join(__dirname, "sounds/risacontos.mp3"), VOL);
+    if (w === 'siuuu') sound.play(path.join(__dirname, "sounds/siuuu.mp3"), VOL);
+    if (w === 'estas tocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
+    if (w === 'notificacion') sound.play(path.join(__dirname, "sounds/whatsappweb.mp3"), VOL);
     // if(w === 'gemido') sound.play(path.join(__dirname, "sounds/gemido.mp3"), VOL);
 }
 
-function dimeMiRango(badge){
+function dimeMiRango(badge) {
     let str = '';
     Object.keys(badge).forEach((rango, index) => {
-        index === 0 ? str += rango : str += ', '+rango;
+        index === 0 ? str += rango : str += ', ' + rango;
     });
 
     return `Rango/s: ${str}`;
 }
 
-function pickRandom(arr){
+function pickRandom(arr) {
     const min = 0;
-    const max = arr ? arr.length : 0;
-    const rand = (Math.floor(Math.pow(10,14)*Math.random()*Math.random())%(max-min+1))+min;
-    return arr[rand];
+    const max = arr ? arr.length-1 : 0;
+    const rand = () => (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) % (max - min + 1)) + min;
+    
+    return arr[rand()];
 }
 
-function dado(){
+function dado() {
     const min = 1;
     const max = 6;
-    const rand = (Math.floor(Math.pow(10,14)*Math.random()*Math.random())%(max-min+1))+min;
+    const rand = (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) % (max - min + 1)) + min;
     return rand;
 }
