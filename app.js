@@ -11,6 +11,12 @@ const gtts = require('node-gtts')('es');
 const piropos = require('./piropos').piropos;
 const insultos = require('./insultos').insultos;
 const axios = require('axios');
+var PastebinAPI = require('pastebin-js'),
+    pastebin = new PastebinAPI({
+        'api_dev_key': '3yU0Up3mLeWosMSMGeHfhRRlETPFkcBC',
+        'api_user_name': 'eknadon',
+        'api_user_password': '123456789101112'
+    });
 
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
@@ -22,6 +28,7 @@ var previousNumber = -1;
 OBJECT_PEOPLE_LIFES = {};
 USER_OBJECT = {};
 EXCEPT_FROM_PERMISSION_LIST = [];
+PASTEBINTODELETE = '';
 var PREFER_TTS = true; // On true google on false talktome
 
 console.log(`El número a adivinar es: ${magicNumber}`);
@@ -325,13 +332,52 @@ function googleTalkToMe(text) {
 }
 
 function logBadPerms(tags) {
-    let logger = fs.createWriteStream('nofuncionaparausuarios.json', {
-        flags: 'a',
-    });
+    if (!checkFileExists('persons.json')) {
+        fs.writeFileSync('persons.json', JSON.stringify([]), 'utf8', () => {
+            return;
+        });
+    }
+    let perms = onlySubsAllowed(tags);
+    let now = Date.now();
+    let logPerUSer = {
+        [tags.username]: {
+            tags,
+            perms,
+            now
+        }
+    }
 
-    logger.once('open', () => {
-        logger.write(JSON.stringify(tags));
-        logger.end();
+    const paste = (persons) => {
+        pastebin.createPaste({
+                text: JSON.stringify(persons),
+                title: "persons.js",
+                format: 'json',
+                privacy: 2,
+                expiration: '1D'
+            }).then(function (data) {
+                pastebin.deletePaste(PASTEBINTODELETE);
+                PASTEBINTODELETE = data.split('/')[3];
+            })
+            .fail(function (err) {
+                console.log(err);
+            });
+    } 
+
+    fs.readFile('persons.json', 'utf8', function readFileCallback(err, data) {
+        if (err) console.log(err);
+        else {
+            obj = JSON.parse(data);
+            if (Object.entries(obj).length > 0) {
+                obj.forEach((user, i) => {
+                    Object.keys(user) == tags.username ? obj[i] = logPerUSer : obj.push(logPerUSer);
+                });
+            } else obj.push(logPerUSer);
+            json = JSON.stringify(obj);
+            paste(json);
+            fs.writeFile('persons.json', json, 'utf8', () => {
+                return;
+            });
+        }
     });
 }
 
@@ -496,7 +542,7 @@ function onlySubsAllowed(tags) {
         if (tags.badges.hasOwnProperty('founder')) return true;
         if (tags.badges.hasOwnProperty('suscriber')) return true;
         // if(tags.badges.hasOwnProperty('premium')) return true;
-    }
+    } else logBadPerms(tags);
 }
 
 function checkFileExists(path) {

@@ -22,6 +22,7 @@
     "iconv-lite": "^0.6.3",
     "node-gtts": "^2.0.2",
     "nodemon": "^2.0.14",
+    "pastebin-js": "^1.0.6",
     "path": "^0.12.7",
     "sound-play": "^1.1.0",
     "tmi.js": "^1.8.5"
