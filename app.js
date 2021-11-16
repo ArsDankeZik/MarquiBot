@@ -187,7 +187,7 @@ client.on('message', (channel, tags, message, self) => {
     }
 
     if (message.toLowerCase().includes('!rvidas')) {
-        msg = message.replace('!rvidas', '').trim();
+        msg = message.toLowerCase().replace('!rvidas', '').trim();
         if (tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem')) {
             console.log(msg);
             if (!msg || msg.length == 0) client.say(channel, `El comando es !rvidas usuario`);
@@ -482,6 +482,24 @@ function takeAGuess(nr, name) {
     }
 
     registerUserAndCount(name, 'rest');
+    let x, y;
+    if(nr > magicNumber){
+        x = nr;
+        y = magicNumber;
+    }
+    else {
+        y = nr;
+        x = magicNumber;
+    }
+
+    if((x-y) < 2) return 'Te estás quemando';
+    if((x-y) < 5) return 'Muy caliente';
+    if((x-y) < 10) return 'Caliente';
+    if((x-y) < 15) return 'Templado';
+    if((x-y) < 25) return 'Frio';
+    if((x-y) < 35) return 'Helado';
+    if((x-y) >= 35) return 'Tan helado como una tumba en pleno invierno';
+
     return 'Más suerte a la próxima';
 }
 
