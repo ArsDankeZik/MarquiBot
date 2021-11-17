@@ -87,8 +87,8 @@ client.on('message', (channel, tags, message, self) => {
     }
 
     if (msgIncludesCMD('!memide', message)) {
-        const params = [channel, tags, message, '!memide', true, []];
-        const value = cleanCommandListener('!memide', []);
+        const params = [channel, tags, message, '!memide', false, []];
+        const value = cleanCommandListener(params);
         const memide = getRandInt(1, 35);
         const frase = (cm) => {
             if (cm > 0 && cm <= 13) return `Según la RAE tu pene de ${cm} cm pasa a ser una pena`;
@@ -332,53 +332,58 @@ function googleTalkToMe(text) {
 }
 
 function logBadPerms(tags) {
-    if (!checkFileExists('persons.json')) {
-        fs.writeFileSync('persons.json', JSON.stringify([]), 'utf8', () => {
-            return;
-        });
-    }
-    let perms = onlySubsAllowed(tags);
-    let now = Date.now();
-    let logPerUSer = {
-        [tags.username]: {
-            tags,
-            perms,
-            now
-        }
-    }
-
-    const paste = (persons) => {
-        pastebin.createPaste({
-                text: JSON.stringify(persons),
-                title: "persons.js",
-                format: 'json',
-                privacy: 2,
-                expiration: '1D'
-            }).then(function (data) {
-                pastebin.deletePaste(PASTEBINTODELETE);
-                PASTEBINTODELETE = data.split('/')[3];
-            })
-            .fail(function (err) {
-                console.log(err);
-            });
-    } 
-
-    fs.readFile('persons.json', 'utf8', function readFileCallback(err, data) {
-        if (err) console.log(err);
-        else {
-            obj = JSON.parse(data);
-            if (Object.entries(obj).length > 0) {
-                obj.forEach((user, i) => {
-                    Object.keys(user) == tags.username ? obj[i] = logPerUSer : obj.push(logPerUSer);
-                });
-            } else obj.push(logPerUSer);
-            json = JSON.stringify(obj);
-            paste(json);
-            fs.writeFile('persons.json', json, 'utf8', () => {
+    try {
+        if (!checkFileExists('persons.json')) {
+            fs.writeFileSync('persons.json', JSON.stringify([]), 'utf8', () => {
                 return;
             });
         }
-    });
+
+        // let perms = onlySubsAllowed(tags);
+        let now = Date.now();
+        let logPerUSer = {
+            [tags.username]: {
+                tags,
+                // perms,
+                now
+            }
+        }
+    
+        const paste = (persons) => {
+            pastebin.createPaste({
+                    text: JSON.stringify(persons),
+                    title: "persons.js",
+                    format: 'json',
+                    privacy: 2,
+                    expiration: '1D'
+                }).then(function (data) {
+                    pastebin.deletePaste(PASTEBINTODELETE);
+                    PASTEBINTODELETE = data.split('/')[3];
+                })
+                .fail(function (err) {
+                    console.log(err);
+                });
+        } 
+    
+        fs.readFile('persons.json', 'utf8', function readFileCallback(err, data) {
+            if (err) console.log(err);
+            else {
+                obj = JSON.parse(data);
+                if (Object.entries(obj).length > 0) {
+                    obj.forEach((user, i) => {
+                        Object.keys(user) == tags.username ? obj[i] = logPerUSer : obj.push(logPerUSer);
+                    });
+                } else obj.push(logPerUSer);
+                json = JSON.stringify(obj);
+                paste(json);
+                fs.writeFile('persons.json', json, 'utf8', () => {
+                    return;
+                });
+            }
+        });
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 function defineVoiceForUser(userVoice) {
@@ -558,9 +563,9 @@ function onlySubsAllowed(tags) {
         if (tags.badges.hasOwnProperty('vip')) return true;
         if (tags.badges.hasOwnProperty('moderator')) return true;
         if (tags.badges.hasOwnProperty('founder')) return true;
-        if (tags.badges.hasOwnProperty('suscriber')) return true;
+        if (tags.badges.hasOwnProperty('subscriber')) return true;
         // if(tags.badges.hasOwnProperty('premium')) return true;
-    } else logBadPerms(tags);
+    } /*else logBadPerms(tags);*/
 }
 
 function checkFileExists(path) {
