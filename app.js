@@ -306,7 +306,7 @@ function helpMenu(lvl, menu, help) {
         'rango': 'Te dirá qué rango tienes',
         'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
         'dado': 'Devolverá un número al azar entre el uno y el seis',
-        'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, recalculando, risatos, siuuu, estas tocandome, notificacion, pegriloso, badumts) según le indiques. EJ: !sonido bofeton',
+        'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, siuuu, estas tocandome, notificacion, pegriloso, badumts) según le indiques. EJ: !sonido bofeton',
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
@@ -549,7 +549,6 @@ function playSound(w) {
     if (w === 'gota') sound.play(path.join(__dirname, "sounds/gota.mp3"), VOL);
     if (w === 'aplausos niños') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
     if (w === 'alertasubnormal') sound.play(path.join(__dirname, "sounds/alertasubnormal.mp3"), VOL);
-    if (w === 'recalculando') sound.play(path.join(__dirname, "sounds/recalculando.mp3"), VOL);
     if (w === 'siuuu') sound.play(path.join(__dirname, "sounds/siuuu.mp3"), VOL);
     if (w === 'estas tocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
     if (w === 'notificacion') sound.play(path.join(__dirname, "sounds/whatsappweb.mp3"), VOL);
