@@ -410,9 +410,11 @@ function cleanCommandListener(arr) {
 }
 
 function talkToLocal(username, text) {
-    if(!username || !text || username.length > 1 || text.length > 1) return;
-    text = text.toLowerCase();
+    if(!username || !text) return;
+    if(text.length < 2 || username.length < 2) return;
+    if(text == 'true' || text == true) return;
 
+    text = text.toLowerCase();
     text.split(' ').forEach(word => {
         if (RESTRICTED_WORDS.includes(word)) {
             text = text.replace(word, 'impronunciable');
@@ -493,23 +495,6 @@ function takeAGuess(nr, name) {
 
 function getRandInt(minimum, maximum) {
     return Math.floor(Math.random() * (maximum - minimum)) + minimum;
-}
-
-function encodeRust(text) {
-    text = text.toLowerCase();
-    text = text.replace('á', 'a');
-    text = text.replace('í', 'i');
-    text = text.replace('ó', 'o');
-    text = text.replace('é', 'e');
-    text = text.replace('ú', 'u');
-    text = text.replace('ç', 'shh');
-    text = text.replace('eé', 'ee');
-    text = text.replace('üi', 'wi');
-    text = text.replace('üe', 'we');
-    text = text.replace('ñ', 'ny');
-    text = text.replace('ll', 'ya');
-
-    return text;
 }
 
 function isBroadcasterWhoCalls(tags) {
