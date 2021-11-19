@@ -19,6 +19,7 @@ var VOL = 1; // Controla el volumen de los sonidos !sonido
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
 var codeGame = '';
+var joinSayHi = false;
 OBJECT_PEOPLE_LIFES = {};
 USER_OBJECT = {};
 EXCEPT_FROM_PERMISSION_LIST = [];
@@ -57,7 +58,13 @@ const whisperClient = new tmi.Client(whisperOptions);
 client.connect().catch(console.error);
 whisperClient.connect().catch(console.error);
 
-client.on('join', (channel, username, self) => client.say(channel, '¡Ya estoy de vuelta por aquí!'));
+client.on('join', (channel, username, self) => {
+    if(!joinSayHi){
+        client.say(channel, '¡Ya estoy de vuelta por aquí!')
+        joinSayHi = true;
+    }
+});
+
 client.on('message', (channel, tags, message, self) => {
     if (self) return;
     if (tags.username.toLowerCase() === 'streamelements') return;
