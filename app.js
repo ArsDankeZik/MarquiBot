@@ -7,32 +7,23 @@ const fs = require('fs');
 const path = require('path');
 const request = require('request');
 const sound = require('sound-play');
-const gtts = require('node-gtts')('es');
 const piropos = require('./piropos').piropos;
 const insultos = require('./insultos').insultos;
 const axios = require('axios');
-var PastebinAPI = require('pastebin-js'),
-    pastebin = new PastebinAPI({
-        'api_dev_key': '3yU0Up3mLeWosMSMGeHfhRRlETPFkcBC',
-        'api_user_name': 'eknadon',
-        'api_user_password': '123456789101112'
-    });
 
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
-const VERSION = '1.3.0';
-var VOL = 0.85; // Controla el volumen de los sonidos !sonido
-var filepath = path.join(__dirname, 'prueba.wav');
+const VERSION = '1.3.1';
+const RESTRICTED_WORDS = ['nigga', 'nigger', 'nigg', 'negrata', 'puta', 'maricón'];
+var VOL = 1; // Controla el volumen de los sonidos !sonido
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
+var codeGame = '';
 OBJECT_PEOPLE_LIFES = {};
 USER_OBJECT = {};
 EXCEPT_FROM_PERMISSION_LIST = [];
-PASTEBINTODELETE = '';
-var PREFER_TTS = true; // On true google on false talktome
 
 console.log(`El número a adivinar es: ${magicNumber}`);
-
 // LINK PARA HACER IMPLEMENTAR CANJEAR POR PUNTOS https://www.twitch.tv/videos/806178796?collection=E1yJPFFiSBZBrQ
 
 const options = {
@@ -66,6 +57,7 @@ const whisperClient = new tmi.Client(whisperOptions);
 client.connect().catch(console.error);
 whisperClient.connect().catch(console.error);
 
+client.on('join', (channel, username, self) => client.say(channel, '¡Ya estoy de vuelta por aquí!'));
 client.on('message', (channel, tags, message, self) => {
     if (self) return;
     if (tags.username.toLowerCase() === 'streamelements') return;
@@ -78,13 +70,26 @@ client.on('message', (channel, tags, message, self) => {
     const excludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST.push(user);
     const deleteFromExcludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST.filter(r => r != user);
 
-    if (msgIsCMD('!delete', message)) {
-        if (isModWhoCalls(tags)) {
-            console.log(tags);
-            whisperClient.whisper('noctismaiestatem', 'Utilizando el comando !delete');
-            client.deletemessage(channel, tags.id);
+    //Check lvl and return parsed level for help command
+    const checkLVL = (tags) => {
+        if (tags.badges != null && tags.badges != undefined) {
+            if (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem') return 2;
+            if (tags.badges.hasOwnProperty('vip') || tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('founder') || tags.badges.hasOwnProperty('premium') || tags.badges.hasOwnProperty('subscriber')) return 1;
         }
-    }
+        return 0;
+    };
+    // haystack array to search arr to check
+    const intersect = (haystack, arr) => {
+        return arr.some(v => haystack.includes(v.toLowerCase()));
+    };
+
+    // if (msgIsCMD('!delete', message)) {
+    //     if (isModWhoCalls(tags)) {
+    //         console.log(tags);
+    //         whisperClient.whisper('noctismaiestatem', 'Utilizando el comando !delete');
+    //         client.deletemessage(channel, tags.id);
+    //     }
+    // }
 
     if (msgIncludesCMD('!memide', message)) {
         const params = [channel, tags, message, '!memide', false, []];
@@ -110,14 +115,24 @@ client.on('message', (channel, tags, message, self) => {
         }
     }
 
-    if (msgIncludesCMD('!deftts', message)) {
-        if (isModWhoCalls(tags)) {
-            const params = [channel, tags, message, '!deftts', true, []];
-            const ttsMode = cleanCommandListener(params);
-            if (ttsMode && ttsMode == '-m') PREFER_TTS = false;
-            else if (ttsMode && ttsMode == '-l') PREFER_TTS = true;
-            else console.error(channel, 'User in exclude list, no perms or unexpected error');
+    if(msgIncludesCMD('!setcode', message)){
+        if(isModWhoCalls(tags)){
+            const params = [channel, tags, message, '!setcode', true, []];
+            const code = cleanCommandListener(params);
+            if(code){
+                codeGame = code;
+                client.say(channel, 'El código fue establecido');   
+            }
         }
+    }
+
+    if(msgIncludesCMD('!code', message)){
+        if(codeGame && codeGame.length > 2) client.say(channel, `El último código que soy capaz de recordar es el ${codeGame.toUpperCase()}`);   
+        else client.say(channel, `No me han asignado aún ningún código...`);   
+    }
+
+    if(msgIncludesCMD('!resetvoice', message)){
+        if(!resetVoiceForUser(tags.username)) client.say(channel, `Has sobrepasado el limite de veces que puedes usar este comando`);
     }
 
     if (msgIncludesCMD('!excluir', message)) {
@@ -142,11 +157,8 @@ client.on('message', (channel, tags, message, self) => {
         const params = [channel, tags, message, '!ttsinsulto', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
 
-        if (PREFER_TTS && value) {
-            // googleTalkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
+        if (value) {
             talkToLocal(tags.username, pickRandom(insultos));
-        } else if (!PREFER_TTS && value) {
-            talkToMe(`${tags.username} dice ${pickRandom(insultos)}`);
         } else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
@@ -154,11 +166,8 @@ client.on('message', (channel, tags, message, self) => {
         const params = [channel, tags, message, '!ttspiropo', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
 
-        if (PREFER_TTS && value) {
-            // googleTalkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
+        if (value) {
             talkToLocal(tags.username, pickRandom(piropos));
-        } else if (!PREFER_TTS && value) {
-            talkToMe(`${tags.username} dice ${pickRandom(piropos)}`);
         } else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
@@ -166,31 +175,27 @@ client.on('message', (channel, tags, message, self) => {
         const params = [channel, tags, message, '!tts', true, EXCEPT_FROM_PERMISSION_LIST];
         const value = cleanCommandListener(params);
 
-        if (PREFER_TTS && value) {
-            // googleTalkToMe(`${tags.username} dice ${value}`);
+        if (value) {
             talkToLocal(tags.username, value);
-        } else if (!PREFER_TTS && value) {
-            talkToMe(`${tags.username} dice ${value}`);
         } else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
     if (message.toLowerCase().includes('!sonido')) {
         msg = message.replace('!sonido', '').trim();
-        onlySubsAllowed(tags) ?
-            playSound(`${msg}`) :
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+        if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ helpMenu(checkLVL(tags), false, 'sonido') }`);
+        onlySubsAllowed(tags) ? playSound(`${msg}`) : client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
     }
 
-    if (message.toLowerCase().includes('!adivinaelnr')) {
-        msg = message.replace('!adivinaelnr', '').trim();
-        client.say(channel, `${takeAGuess(msg, tags.username)}`);
+    if (message.toLowerCase().includes('!adivina')) {
+        msg = message.replace('!adivina', '').trim();
+        client.say(channel, `${ takeAGuess(msg, tags.username) }`);
     }
 
     if (message.toLowerCase().includes('!rvidas')) {
         msg = message.toLowerCase().replace('!rvidas', '').trim();
         if (tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem')) {
             console.log(msg);
-            if (!msg || msg.length == 0) client.say(channel, `El comando es !rvidas usuario`);
+            if (!msg || msg.length == 0) client.say(channel, `El comando es !rvidas nombreusuario (sin @)`);
             else client.say(channel, `${registerUserAndCount(msg, 'reset')}`);
         }
     }
@@ -200,32 +205,38 @@ client.on('message', (channel, tags, message, self) => {
         msg = msg.replace('!', '');
         menu = msg.length == 0;
 
-        const checkLVL = (tags) => {
-            if (tags.badges != null && tags.badges != undefined) {
-                if (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem') return 2;
-                if (tags.badges.hasOwnProperty('vip') || tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('founder') || tags.badges.hasOwnProperty('premium')) return 1;
-            }
-            return 0;
-        };
-
         if (menu) client.say(channel, `Escribe !help comando(sustituye comando por el comando que quieras consultar, no me seas borrego) para saber más acerca de un comando. Comandos disponibles: ${helpMenu(checkLVL(tags), true, null)}`);
         if (!menu) client.say(channel, `${helpMenu(checkLVL(tags), false, msg)}`);
+    }
+
+    if(message.toLowerCase().includes('hola')){
+        client.say(channel, `Hola a ti también, @${tags.username}`);
+    }
+
+    if(intersect(RESTRICTED_WORDS, message.toLowerCase().split(' '))) client.say(channel, `Cuidado con lo que dices, @${tags.username}, o dependiendo de la gravedad de tus palabras uno de nuestros queridos mods te puede poner un timeout/ban`);
+    if(intersect(['puta', 'furcia', 'zorra', 'guarra', 'maricona', 'malparido'], message.toLowerCase().split(' '))) client.say(channel, `Quizás deberías moderar tu lenguaje estimado/a @${tags.username}`);
+    if(intersect(['twitter', 'tw'], message.toLowerCase().split(' '))) client.say(channel, `El twitter de AlberMarqui es https://bit.ly/3Fb6vba`);
+    if(intersect(['instagram', 'ig'], message.toLowerCase().split(' '))) client.say(channel, `El instagram de AlberMarqui es https://bit.ly/3ky9kv5`);
+    if(intersect(['discord', 'dc'], message.toLowerCase().split(' '))) client.say(channel, `El discord del canal es https://discord.gg/d3xTjTwMXn`);
+    if(intersect(['código', 'codigo', 'code'], message.toLowerCase().split(' ')) || intersect(message.toLowerCase().split(' '), ['código', 'codigo', 'code'])) {
+        console.log('Me ha parecido que han pedido el código del juego');
+        if(!codeGame && !codeGame.length > 2) console.log('¿Es posible que no haya ningún código establecido?');
+        else if(codeGame && codeGame.length > 2) client.say(channel, `El último código que me han registrado mis amos es ${codeGame.toUpperCase()}`);
     }
 
     switch (message.toLowerCase()) {
         case '!insulto':
             client.say(channel, `${pickRandom(insultos)}`);
             break;
-        case '!nomefunciona':
-            logBadPerms(tags);
-            break;
         case '!log':
-            if (tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('broadcaster')) {
+            // hace un sequimiento de los tags del usuario (mod o broadcaster) por consola
+            if (isModWhoCalls(tags)) {
                 console.log(message);
                 console.log(tags);
             }
             break;
         case '!log-user':
+            // hace un seguimiento de los tags del cualquier tipo de usuario por consola
             console.log(message);
             console.log(tags);
             break;
@@ -276,9 +287,10 @@ client.on('message', (channel, tags, message, self) => {
 function helpMenu(lvl, menu, help) {
     const main = {
         // 'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
-        'nomefunciona': 'Esto registrará que a vosotros no os funciona algún comando que requiera de permisos de suscriptor o vip',
+        'resetvoice': 'Establece una nueva voz para cuando uses el tts, pero cuidado, solo se puede usar 3 veces este comando',
+        'setcode': 'Establece el código de la partida para que el bot lo sople por el chat EJ: !setcode ABCDEF',
+        'code': 'Devuelve el código de la partida en curso y el código establecido',
         'volumen': 'Establece el volumen de voz del bot, rango permitido 0.00 - 1.00 EJ: !volumen 0.95',
-        'deftts': 'Establece el modo tts a hablar (por defecto: lento) para todo el chat y durante todo el stream. El -m es para el tts monguer y el -l es para el tts lento. EJ: !deftts -m, !deftts -l',
         'excluir': 'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
         'incluir': 'Revertirá las acciones del comando !excluir. EJ: !incluir anonymous',
         'insulto': 'Devolverá al chat un insulto al azar',
@@ -290,10 +302,10 @@ function helpMenu(lvl, menu, help) {
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
-        'adivinaelnr': 'En cada partida se generará un número al azar del 1 al 50. Con !adivinaelnr puedes intentar adivinarlo, pero cuidado, solo tienes seis vidas. Si fallas se te restará una vida, por otro lado sí ganas se te sumará una. EJ: !adivinaelnr 13',
+        'adivina': 'En cada partida se generará un número al azar del 1 al 50. Con !adivinaelnr puedes intentar adivinarlo, pero cuidado, solo tienes seis vidas. Si fallas se te restará una vida, por otro lado sí ganas se te sumará una. EJ: !adivinaelnr 13',
         'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
         'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
-        'mostrarnr': 'Este comando enseñará el número a adivinar en el chat.',
+        'mostrarnr': 'Este comando enseñará el número a adivinar en el chat',
         'memide': 'Este comando calculará el tamaño de tu nepe y lo mostrará por el chat de manera graciosa',
         'dc': 'Enlace de invitación al servidor de Discord',
         'ig': 'Enlace del instagram de AlberMarqui',
@@ -325,84 +337,47 @@ function setVolume(n) {
     console.log(`New volume set to: ${VOL}`);
 }
 
-function googleTalkToMe(text) {
-    gtts.save(filepath, text, () => {
-        sound.play(path.join(__dirname, "prueba.wav"), VOL);
-    });
-}
+//UNTESTED
+function resetVoiceForUser(user){
+    const getRandomPitch = (min, max) => (Math.random() * (min - max) + max).toFixed(2);
+    const getRandomRate = (min, max) => (Math.random() * (min - max) + max).toFixed(2);
+    const getRandomVoice = () => ['Helena', 'Pablo', 'Laura'][getRandInt(0, 2)];
 
-function logBadPerms(tags) {
-    try {
-        if (!checkFileExists('persons.json')) {
-            fs.writeFileSync('persons.json', JSON.stringify([]), 'utf8', () => {
-                return;
-            });
-        }
-
-        // let perms = onlySubsAllowed(tags);
-        let now = Date.now();
-        let logPerUSer = {
-            [tags.username]: {
-                tags,
-                // perms,
-                now
-            }
-        }
-    
-        const paste = (persons) => {
-            pastebin.createPaste({
-                    text: JSON.stringify(persons),
-                    title: "persons.js",
-                    format: 'json',
-                    privacy: 2,
-                    expiration: '1D'
-                }).then(function (data) {
-                    pastebin.deletePaste(PASTEBINTODELETE);
-                    PASTEBINTODELETE = data.split('/')[3];
-                })
-                .fail(function (err) {
-                    console.log(err);
-                });
-        } 
-    
-        fs.readFile('persons.json', 'utf8', function readFileCallback(err, data) {
-            if (err) console.log(err);
-            else {
-                obj = JSON.parse(data);
-                if (Object.entries(obj).length > 0) {
-                    obj.forEach((user, i) => {
-                        Object.keys(user) == tags.username ? obj[i] = logPerUSer : obj.push(logPerUSer);
-                    });
-                } else obj.push(logPerUSer);
-                json = JSON.stringify(obj);
-                paste(json);
-                fs.writeFile('persons.json', json, 'utf8', () => {
-                    return;
-                });
-            }
-        });
-    } catch (error) {
-        console.error(error);
+    if(!USER_OBJECT.hasOwnProperty(user)){
+        USER_OBJECT[user] = {
+            rate: getRandomRate(1.25, 1.65),
+            pitch: getRandomPitch(0.10, 1.25),
+            voice: getRandomVoice(),
+            reset: 0
+        };
     }
+
+    if (USER_OBJECT && USER_OBJECT.hasOwnProperty(user) && USER_OBJECT[user].reset < 3) {
+        USER_OBJECT[user] = {
+            rate: getRandomRate(1.25, 1.65),
+            pitch: getRandomPitch(0.10, 1.25),
+            voice: getRandomVoice(),
+            reset: USER_OBJECT[user].reset+1
+        };
+        console.log(USER_OBJECT[user]);
+        console.log(`La voz de ${user} ha cambiado`);
+        return true;
+    }
+
+    return false;
 }
 
 function defineVoiceForUser(userVoice) {
-    const getRandomPitch = (min, max) => {
-        return (Math.random() * (min - max) + max).toFixed(2);
-    };
-
-    const getRandomRate = (min, max) => {
-        return (Math.random() * (min - max) + max).toFixed(2);
-    };
-
+    const getRandomPitch = (min, max) => (Math.random() * (min - max) + max).toFixed(2);
+    const getRandomRate = (min, max) => (Math.random() * (min - max) + max).toFixed(2);
     const getRandomVoice = () => ['Helena', 'Pablo', 'Laura'][getRandInt(0, 2)];
-
 
     if (USER_OBJECT && !USER_OBJECT.hasOwnProperty(userVoice.user)) {
         USER_OBJECT[userVoice.user] = {
             rate: getRandomRate(1.25, 1.65),
             pitch: getRandomPitch(0.10, 1.25),
-            voice: getRandomVoice()
+            voice: getRandomVoice(),
+            reset: 0
         };
         return `http://localhost:3000/client?msg=${userVoice.msg}&voice=${USER_OBJECT[userVoice.user].voice}&rate=${USER_OBJECT[userVoice.user].rate}&pitch=${USER_OBJECT[userVoice.user].pitch}&volume=${VOL}&to=embian`;
     } else if (USER_OBJECT && USER_OBJECT.hasOwnProperty(userVoice.user)) {
@@ -427,8 +402,8 @@ function cleanCommandListener(arr) {
 }
 
 function talkToLocal(username, text) {
+    if(!username || !text || username.length > 1 || text.length > 1) return;
     text = text.toLowerCase();
-    const RESTRICTED_WORDS = ['nigga', 'negro', 'negrata', 'puta', 'furcia', 'guarra', 'zorra', 'gay', 'maricón'];
 
     text.split(' ').forEach(word => {
         if (RESTRICTED_WORDS.includes(word)) {
@@ -529,22 +504,6 @@ function encodeRust(text) {
     return text;
 }
 
-function talkToMe(text) {
-    if (process.platform != 'win32') {
-        console.log('No funcionará en otra plataforma que no sea Windows');
-        return;
-    }
-    if (text == undefined || text.length == 0) return;
-    let commands = ['Add-Type -AssemblyName System.speech; $speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; $speak.Rate = 1.2; $speak.Speak([Console]::In.ReadToEnd())'];
-    let options = {
-        shell: true
-    };
-    let childD = proc.spawn('powershell', commands, options);
-    text = encodeRust(text);
-    childD.stdin.end(iconv.encode(text, 'UTF-8'));
-}
-
-
 function isBroadcasterWhoCalls(tags) {
     if ((tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('broadcaster') && tags.badges.broadcaster === '1') || tags.username.toLowerCase() == 'noctismaiestatem') return true;
 }
@@ -556,16 +515,14 @@ function isModWhoCalls(tags) {
 
 function onlySubsAllowed(tags) {
     if (!SUBS) return true;
-
     if (tags.badges != null && tags.badges != undefined && tags.badges.hasOwnProperty('broadcaster') && tags.badges.broadcaster === '1') return true;
-
     if (tags.badges != null && tags.badges != undefined) {
         if (tags.badges.hasOwnProperty('vip')) return true;
         if (tags.badges.hasOwnProperty('moderator')) return true;
         if (tags.badges.hasOwnProperty('founder')) return true;
         if (tags.badges.hasOwnProperty('subscriber')) return true;
         // if(tags.badges.hasOwnProperty('premium')) return true;
-    } /*else logBadPerms(tags);*/
+    }
 }
 
 function checkFileExists(path) {
