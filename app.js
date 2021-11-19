@@ -119,10 +119,11 @@ client.on('message', (channel, tags, message, self) => {
         if(isModWhoCalls(tags)){
             const params = [channel, tags, message, '!setcode', true, []];
             const code = cleanCommandListener(params);
-            if(code){
+            console.log(code);
+            if(code != true){
                 codeGame = code;
-                client.say(channel, 'El código fue establecido');   
-            }
+                client.say(channel, 'El código fue establecido');
+            } else client.say(channel, `Esto no tiene sentido para mi`);
         }
     }
 
