@@ -14,7 +14,7 @@ const axios = require('axios');
 // Variables para el programa
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS
 const VERSION = '1.3.1';
-const RESTRICTED_WORDS = ['nigga', 'nigger', 'nigg', 'negrata', 'puta', 'maricón'];
+const RESTRICTED_WORDS = ['nigga', 'nigger', 'nigg', 'negrata', 'maricón', 'maricon'];
 var VOL = 1; // Controla el volumen de los sonidos !sonido
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
