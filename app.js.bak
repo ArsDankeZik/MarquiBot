@@ -65,23 +65,15 @@ client.on('join', (channel, username, self) => {
     }
 });
 
-client.on('action', (channel, tags, message, self) => {
-    console.log(tags);
-});
-
 client.on('message', (channel, tags, message, self) => {
     if (self) return;
-    console.log(tags);
+    
     if(tags.hasOwnProperty('custom-reward-id')) {
         console.log('Tags from message:');
         console.log(tags);
-        if(tags['custom-reward-id'] == '3eeda0b4-a6f4-4304-b029-8f81631982eb'){
-            msg = message.trim();
-            if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ helpMenu(checkLVL(tags), false, 'sonido') }`);
-           else playSound(`${msg}`);
-        }
         if(tags['custom-reward-id'] == 'ae189976-2c67-49bf-987b-2c0b51bf89d5') console.log(`${tags.username} ha canjeado "guiar raid" a ${message}`);
     }
+    
     if (tags.username.toLowerCase() === 'streamelements') return;
     //Normalize cmd and check if include cmd
     const msgIncludesCMD = (cmd, message) => message.toLowerCase().includes(cmd) ? true : false;
