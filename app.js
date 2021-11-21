@@ -65,16 +65,16 @@ client.on('join', (channel, username, self) => {
     }
 });
 
-client.on('action', (channel, tags, message, self) => {
-    console.log(tags);
-});
+// client.on('action', (channel, tags, message, self) => {
+//     console.log(tags);
+// });
 
 client.on('message', (channel, tags, message, self) => {
     if (self) return;
-    console.log(tags);
+    // console.log(tags);
     if(tags.hasOwnProperty('custom-reward-id')) {
-        console.log('Tags from message:');
-        console.log(tags);
+        // console.log('Tags from message:');
+        // console.log(tags);
         if(tags['custom-reward-id'] == '3eeda0b4-a6f4-4304-b029-8f81631982eb'){
             msg = message.trim();
             if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ helpMenu(checkLVL(tags), false, 'sonido') }`);
