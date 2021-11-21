@@ -80,7 +80,7 @@ client.on('message', (channel, tags, message, self) => {
             if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ helpMenu(checkLVL(tags), false, 'sonido') }`);
            else playSound(`${msg}`);
         }
-        if(tags['custom-reward-id'] == 'ae189976-2c67-49bf-987b-2c0b51bf89d5') console.log(`${tags.username} ha canjeado "guiar raid" a ${message}`);
+        // if(tags['custom-reward-id'] == 'ae189976-2c67-49bf-987b-2c0b51bf89d5') console.log(`${tags.username} ha canjeado "guiar raid" a ${message}`);
     }
     if (tags.username.toLowerCase() === 'streamelements') return;
     //Normalize cmd and check if include cmd
@@ -203,11 +203,11 @@ client.on('message', (channel, tags, message, self) => {
         } else console.error(channel, 'User in exclude list, no perms or unexpected error');
     }
 
-    if (message.toLowerCase().includes('!sonido')) {
-        msg = message.replace('!sonido', '').trim();
-        if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ helpMenu(checkLVL(tags), false, 'sonido') }`);
-        onlySubsAllowed(tags) ? playSound(`${msg}`) : client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
-    }
+    // if (message.toLowerCase().includes('!sonido')) {
+    //     msg = message.replace('!sonido', '').trim();
+    //     if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ helpMenu(checkLVL(tags), false, 'sonido') }`);
+    //     onlySubsAllowed(tags) ? playSound(`${msg}`) : client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+    // }
 
     if (message.toLowerCase().includes('!adivina')) {
         msg = message.replace('!adivina', '').trim();
@@ -321,7 +321,7 @@ function helpMenu(lvl, menu, help) {
         'rango': 'Te dirá qué rango tienes',
         'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
         'dado': 'Devolverá un número al azar entre el uno y el seis',
-        'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, siuuu, estas tocandome, notificacion, pegriloso, badumts) según le indiques. EJ: !sonido bofeton',
+        // 'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, siuuu, estas tocandome, notificacion, pegriloso, badumts) según le indiques. EJ: !sonido bofeton',
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
