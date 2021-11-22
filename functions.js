@@ -332,7 +332,7 @@ function alberMarqui(){
     let now = moment();
     let birth = moment([now.year(), 10, 27, 0, 0]);
     if(birth.diff(now, 'days') > 30) return `${birth.diff(now, 'months')} meses`;
-    else return `${birth.diff(now, 'days')+1} días`;
+    else return `${birth.diff(now, 'days')} días`;
 }
 
 module.exports.VOL = VOL;
