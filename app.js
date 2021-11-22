@@ -132,6 +132,10 @@ client.on('message', (channel, tags, message, self) => {
         else client.say(channel, `No me han asignado aún ningún código...`);   
     }
 
+    if(msgIncludesCMD('!cumple', message)){
+        client.say(channel, `¡Queda ${func.alberMarqui()} para el cumple de nuestro querido streamer que es el 11/26 de cada año!`);
+    }
+
     if(msgIncludesCMD('!resetvoice', message)){
         if(!func.resetVoiceForUser(tags.username)) client.say(channel, `Has sobrepasado el limite de veces que puedes usar este comando`);
     }

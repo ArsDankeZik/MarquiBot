@@ -5,6 +5,7 @@ const request = require('request');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
+const moment = require('moment');
 
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS (no es necesario por más tiempo)
 const RESTRICTED_WORDS = ['nigga', 'nigger', 'nigg', 'negrata', 'maricón', 'maricon'];
@@ -279,6 +280,8 @@ function resetVoiceForUser(user){
  function helpMenu(lvl, menu, help) {
     const main = {
         // 'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
+        // 'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, siuuu, estas tocandome, notificacion, pegriloso, badumts) según le indiques. EJ: !sonido bofeton',
+        'cumple': 'Muestra el tiempo restante para el cumpleaños del streamer',
         'hora': 'Indica la hora actual en la península Ibérica',
         'donde': 'Te dice el lugar en el que vive Alber Marqui',
         'resetvoice': 'Establece una nueva voz para cuando uses el tts, pero cuidado, solo se puede usar 3 veces este comando',
@@ -292,7 +295,6 @@ function resetVoiceForUser(user){
         'rango': 'Te dirá qué rango tienes',
         'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
         'dado': 'Devolverá un número al azar entre el uno y el seis',
-        // 'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, siuuu, estas tocandome, notificacion, pegriloso, badumts) según le indiques. EJ: !sonido bofeton',
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
@@ -324,6 +326,13 @@ function resetVoiceForUser(user){
     } else return `No existe el comando ${help} o lo has escrito mal`;
 
     return 'Hmmm. No debería haber pasado esto, avisa a @NoctisMaiestatem. Mientras tanto reinicia el bot.';
+}
+
+function alberMarqui(){
+    let now = moment();
+    let birth = moment([now.year(), 10, 27, 0, 0]);
+    if(birth.diff(now, 'days') > 30) return `${birth.diff(now, 'months')} meses`;
+    else return `${birth.diff(now, 'days')+1} días`;
 }
 
 module.exports.VOL = VOL;
@@ -358,3 +367,4 @@ module.exports.defineVoiceForUser = defineVoiceForUser;
 module.exports.resetVoiceForUser = resetVoiceForUser;
 module.exports.setVolume = setVolume;
 module.exports.helpMenu = helpMenu;
+module.exports.alberMarqui = alberMarqui;
