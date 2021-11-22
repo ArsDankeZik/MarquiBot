@@ -113,6 +113,14 @@ client.on('message', (channel, tags, message, self) => {
     //     }
     // }
 
+    if(msgIncludesCMD('!hora', message)){
+        client.say(channel, `La hora actual en el Reino de España es ${hora()}`);
+    }
+
+    if(msgIncludesCMD('!donde', message)){
+        client.say(channel, `${donde()}`);
+    }
+
     if (msgIncludesCMD('!memide', message)) {
         const params = [channel, tags, message, '!memide', false, []];
         const value = cleanCommandListener(params);
@@ -310,6 +318,8 @@ client.on('message', (channel, tags, message, self) => {
 function helpMenu(lvl, menu, help) {
     const main = {
         // 'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
+        'hora': 'Indica la hora actual en la península Ibérica',
+        'donde': 'Te dice el lugar en el que vive Alber Marqui',
         'resetvoice': 'Establece una nueva voz para cuando uses el tts, pero cuidado, solo se puede usar 3 veces este comando',
         'setcode': 'Establece el código de la partida para que el bot lo sople por el chat EJ: !setcode ABCDEF',
         'code': 'Devuelve el código de la partida en curso y el código establecido',
@@ -594,4 +604,19 @@ function dado() {
     const max = 6;
     const rand = (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) % (max - min + 1)) + min;
     return rand;
+}
+
+function hora(){
+    const dt = new Date();
+    const hora = dt.getHours();
+    const min = dt.getMinutes();
+    const sec = dt.getSeconds();
+
+    return `${hora}:${min}:${sec}`;
+}
+
+function donde(){
+    return `Alber Marqui vive en un remoto, 
+    bello y pintoresco pueblo de la Comunidad de Madrid, 
+    dentro del Reino de España`;
 }
