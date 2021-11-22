@@ -117,7 +117,7 @@ client.on('message', (channel, tags, message, self) => {
 
     if(msgIncludesCMD('!setcode', message)){
         if(func.isModWhoCalls(tags)){
-            const params = [channel, tags, message, '!setcode', true, [], params];
+            const params = [channel, tags, message, '!setcode', true, [], client];
             const code = func.cleanCommandListener(params);
             
             if(code != true){
