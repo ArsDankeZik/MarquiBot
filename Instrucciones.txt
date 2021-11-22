@@ -1,7 +1,8 @@
 albermarquibot.ps1 --> click derecho --> Ejecutar con PowerShell:
-    - Ejecuta actualizaciones 
+    - Ejecuta actualizaciones de los distintos ficheros y de sí mismo
     - Ejecuta la instalación de módulos faltantes
+    - Limpia los módulos que no se usan
     - Ejecuta el bot
+    - Ejecuta el tts y la página web (darle click una vez al talk to me)
 
-albermarquibot.exe solo está en caso de que la política de ejecución de scripts está deshabilitada para tu equipo (hablando en cristiano no se hace nada con el de primeras)
-Si el bot deja de funcionar por X razón en la terminal que hay abierta escribir rs
+- Si el bot se cuelga escribir rs en su terminal (repito, su terminal, no la del tts)
