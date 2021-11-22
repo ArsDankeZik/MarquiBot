@@ -133,7 +133,7 @@ client.on('message', (channel, tags, message, self) => {
     }
 
     if(msgIncludesCMD('!cumple', message)){
-        client.say(channel, `¡Queda ${func.alberMarqui()} para el cumple de nuestro querido streamer que es el 11/26 de cada año!`);
+        client.say(channel, `¡El cumple de nuestro querido streamer es el 26/11, ya solo queda ${func.alberMarqui()}!`);
     }
 
     if(msgIncludesCMD('!resetvoice', message)){
