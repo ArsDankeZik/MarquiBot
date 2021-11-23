@@ -1,5 +1,4 @@
 - AHORCADO
 - Incorporar audio de alv, bro, ufo, wassaaaaaaa
-- El tema de los permisos con subs etc sigue sin funcionar bien 
-- Caliente, frío, adivinar el nr
 - Enviar mensaje a @everyone en dc al abrir el bot
+- El !code que devuelva el código en minúscula al tratarse de una url sino en mayus

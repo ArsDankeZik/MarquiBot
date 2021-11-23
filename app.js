@@ -128,7 +128,10 @@ client.on('message', (channel, tags, message, self) => {
     }
 
     if(msgIncludesCMD('!code', message)){
-        if(func.codeGame && func.codeGame.length > 2) client.say(channel, `El último código que soy capaz de recordar es el ${func.codeGame.toUpperCase()}`);   
+        if(func.codeGame && func.codeGame.length > 2) {
+            const codeGamePrint = func.codeGame.includes('http') ? func.codeGame : func.codeGame.toUpperCase();
+            client.say(channel, `El último código que soy capaz de recordar es el ${codeGamePrint}`);
+        }
         else client.say(channel, `No me han asignado aún ningún código...`);   
     }
 
