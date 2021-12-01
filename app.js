@@ -135,10 +135,7 @@ client.on('message', (channel, tags, message, self) => {
         else client.say(channel, `No me han asignado aún ningún código...`);   
     }
 
-    if(msgIncludesCMD('!cumple', message)){
-        client.say(channel, `¡El cumple de nuestro querido streamer es el 26/11, ya solo queda ${func.alberMarqui()}!`);
-    }
-
+    if(msgIncludesCMD('!cumple', message)) client.say(channel, `¡El cumple de nuestro querido streamer es el 26/11, ya solo queda ${func.alberMarqui()}!`);
     if(msgIncludesCMD('!resetvoice', message)){
         if(!func.resetVoiceForUser(tags.username)) client.say(channel, `Has sobrepasado el limite de veces que puedes usar este comando`);
     }
@@ -247,9 +244,6 @@ client.on('message', (channel, tags, message, self) => {
             break;
         case '!piropo':
             client.say(channel, `${func.pickRandom(piropos)}`);
-            break;
-        case 'hola':
-            client.say(channel, `Hola, ${tags.username}`);
             break;
         case '!dado':
             client.say(channel, `Has sacado un, ${func.dado()}`);

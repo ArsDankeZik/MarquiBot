@@ -331,6 +331,7 @@ function resetVoiceForUser(user){
 function alberMarqui(){
     let now = moment();
     let birth = moment([now.year(), 10, 27, 0, 0]);
+    if(birth.diff(now, 'hours') <= 0) return `${birth.diff(now, 'months')} meses`;
     if(birth.diff(now, 'hours') >= 24) return `${birth.diff(now, 'days')} días`;
     else if(birth.diff(now, 'hours') < 24) return `${birth.diff(now, 'hours')} horas`;
     else if(birth.diff(now, 'days') > 30) return `${birth.diff(now, 'months')} meses`;

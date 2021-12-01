@@ -1,4 +1,4 @@
 - AHORCADO
 - Incorporar audio de alv, bro, ufo, wassaaaaaaa
 - Enviar mensaje a @everyone en dc al abrir el bot
-- El !code que devuelva el código en minúscula al tratarse de una url sino en mayus
+- Probar !cumple tras haber incorporado que sí horas <= 0 devuelvan los meses restantes
