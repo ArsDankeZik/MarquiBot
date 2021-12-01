@@ -18,9 +18,9 @@ var OBJECT_PEOPLE_LIFES = {};
 var USER_OBJECT = {};
 var EXCEPT_FROM_PERMISSION_LIST = [];
 
-const dado = () => {
+const dado = (n) => {
     const min = 1;
-    const max = 6;
+    const max = n;
     const rand = (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) % (max - min + 1)) + min;
     return rand;
 };
@@ -30,6 +30,10 @@ const hora = () => {
     const hora = dt.getHours();
     const min = dt.getMinutes();
     const sec = dt.getSeconds();
+
+    if((hora).toString().length == 1) hora = `0${hora}`;
+    if((min).toString().length == 1) min = `0${min}`;
+    if((sec).toString().length == 1) sec = `0${sec}`;
 
     return `${hora}:${min}:${sec}`;
 };
@@ -75,10 +79,10 @@ const playSound = (w) => {
     if (w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
     if (w === 'pedomojado') sound.play(path.join(__dirname, "sounds/pedo_mojado.mp3"), VOL);
     if (w === 'gota') sound.play(path.join(__dirname, "sounds/gota.mp3"), VOL);
-    if (w === 'aplausos niños') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
-    if (w === 'alertasubnormal') sound.play(path.join(__dirname, "sounds/alertasubnormal.mp3"), VOL);
+    if (w === 'aplausos niños' || w === 'aplausos') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
+    if (w === 'alertasubnormal' || w === 'alertaporsubnormal') sound.play(path.join(__dirname, "sounds/alertasubnormal.mp3"), VOL);
     if (w === 'siuuu') sound.play(path.join(__dirname, "sounds/siuuu.mp3"), VOL);
-    if (w === 'estas tocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
+    if (w === 'estas tocandome' || w === 'tocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
     if (w === 'notificacion') sound.play(path.join(__dirname, "sounds/whatsappweb.mp3"), VOL);
     if (w === 'badumts') sound.play(path.join(__dirname, "sounds/badumts.mp3"), VOL);
     if (w === 'pegriloso') sound.play(path.join(__dirname, "sounds/pegriloso.mp3"), VOL);
@@ -210,7 +214,7 @@ function cleanCommandListener(arr) {
     [channel, tags, message, cmd, permission, permissionExceptions, client] = arr;
     if (permission) {
         if (!onlySubsAllowed(tags) || permissionExceptions.includes(tags.username)) {
-            client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
+            client.say(channel, `@${tags.username} este comando solo está para mods/vips/subs, consulta con !help los comandos que puedes realizar o suscríbete al canal`);
             return false;
         }
     }
@@ -294,7 +298,7 @@ function resetVoiceForUser(user){
         'piropo': 'Devolverá al chat un piropo al azar',
         'rango': 'Te dirá qué rango tienes',
         'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
-        'dado': 'Devolverá un número al azar entre el uno y el seis',
+        'dado': 'Devolverá un número al azar entre el uno y el numero que le especifiques, sí no lo haces el máximo de caras serán seis. EJ: !dado 100',
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
@@ -311,7 +315,7 @@ function resetVoiceForUser(user){
     };
 
     const broadcasterCMD = ['mostrarnr', 'rvidas', 'delete'];
-    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts', 'delete', 'volumen'];
+    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts', 'delete', 'volumen', 'modcmd'];
 
     if (lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!' + cmd).join(', ');
     if (lvl == 1 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).map(cmd => '!' + cmd).join(', ');

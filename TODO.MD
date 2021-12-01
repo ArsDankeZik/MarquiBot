@@ -2,3 +2,5 @@
 - Incorporar audio de alv, bro, ufo, wassaaaaaaa
 - Enviar mensaje a @everyone en dc al abrir el bot
 - Probar !cumple tras haber incorporado que sí horas <= 0 devuelvan los meses restantes
+- Probar !hora tras añadirle los ceros
+- Modificado el mensaje de permisos erróneo por algo de más de ayuda

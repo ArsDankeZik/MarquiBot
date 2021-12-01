@@ -3,8 +3,11 @@ let chances = 10;
 let selectedWord = pickRandom(words); 
 let wrong = 0;
 let wrongChoices = [];
+let goodChoices = [];
 
 function adivinar(char){
+    if(goodChoices.includes(char)) return;
+    if(wrongChoices.includes(char)) return;
     if(indexAll(selectedWord, char).length == 0 && !wrongChoices.includes(char)) {
         wrongChoices.push(char);
         wrong++;
@@ -22,3 +25,4 @@ function pickRandom(arr) {
 function indexAll(word, char){
     return word.split('').map((c, i) => c === char ? i : -1).filter(v => { if(v >= 0) return v; });
 }
+

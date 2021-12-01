@@ -75,9 +75,9 @@ client.on('message', (channel, tags, message, self) => {
         return arr.some(v => haystack.includes(v.toLowerCase()));
     };
 
-    if(msgIncludesCMD('!test', message) && func.isModWhoCalls(tags)){
+    if(msgIncludesCMD('!modcmd', message) && func.isModWhoCalls(tags)){
         if(msgIncludesCMD('sonido', message)){
-            const params = [channel, tags, message, '!test sonido', false, [], client];
+            const params = [channel, tags, message, '!modcmd sonido', false, [], client];
             const value = func.cleanCommandListener(params);
             func.playSound(value);
         }
@@ -190,6 +190,16 @@ client.on('message', (channel, tags, message, self) => {
         client.say(channel, `${ func.takeAGuess(msg, tags.username) }`);
     }
 
+    if (msgIncludesCMD('!dado', message)) {
+        const params = [channel, tags, message, '!dado', false, [], client];
+        let value = func.cleanCommandListener(params);
+        if (value == undefined || value == null || value == true) value = 6;
+        console.log(value);
+        if (!isNaN(value)) {
+            client.say(channel, `Has sacado un, ${func.dado(value)}`);
+        }
+    }
+
     //@refactor
     if (message.toLowerCase().includes('!rvidas')) {
         msg = message.toLowerCase().replace('!rvidas', '').trim();
@@ -245,9 +255,6 @@ client.on('message', (channel, tags, message, self) => {
         case '!piropo':
             client.say(channel, `${func.pickRandom(piropos)}`);
             break;
-        case '!dado':
-            client.say(channel, `Has sacado un, ${func.dado()}`);
-            break;
         case '!vidas':
             client.say(channel, `${func.registerUserAndCount(tags.username, 'vidas')}`);
             break;
@@ -272,12 +279,6 @@ client.on('message', (channel, tags, message, self) => {
             break;
     };
 });
-
-    // if (message.toLowerCase().includes('!sonido')) {
-    //     msg = message.replace('!sonido', '').trim();
-    //     if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ helpMenu(checkLVL(tags), false, 'sonido') }`);
-    //     onlySubsAllowed(tags) ? playSound(`${msg}`) : client.say(channel, `@${tags.username} no tienes permitido realizar esta acción`);
-    // }
 
     // if (msgIsCMD('!delete', message)) {
     //     if (isModWhoCalls(tags)) {
