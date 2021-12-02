@@ -26,10 +26,10 @@ const dado = (n) => {
 };
 
 const hora = () => {
-    const dt = new Date();
-    const hora = dt.getHours();
-    const min = dt.getMinutes();
-    const sec = dt.getSeconds();
+    let dt = new Date();
+    let hora = dt.getHours();
+    let min = dt.getMinutes();
+    let sec = dt.getSeconds();
 
     if((hora).toString().length == 1) hora = `0${hora}`;
     if((min).toString().length == 1) min = `0${min}`;

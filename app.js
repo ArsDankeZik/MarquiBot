@@ -94,7 +94,7 @@ client.on('message', (channel, tags, message, self) => {
     if (msgIncludesCMD('!memide', message)) {
         const params = [channel, tags, message, '!memide', false, [], client];
         const value = func.cleanCommandListener(params);
-        const memide = func.getRandInt(1, 35);
+        let memide = tags.username.toLowerCase() != 'noctismaiestatem' ? func.getRandInt(1, 35) : func.getRandInt(15, 35);
         const frase = (cm) => {
             if (cm > 0 && cm <= 13) return `Según la RAE tu pene de ${cm} cm pasa a ser una pena`;
             else if (cm > 13 && cm <= 22) return `Tu pene de ${cm} cm no es para tanto a no ser que sepas usarlo`;
@@ -135,7 +135,11 @@ client.on('message', (channel, tags, message, self) => {
         else client.say(channel, `No me han asignado aún ningún código...`);   
     }
 
-    if(msgIncludesCMD('!cumple', message)) client.say(channel, `¡El cumple de nuestro querido streamer es el 26/11, ya solo queda ${func.alberMarqui()}!`);
+    if(msgIncludesCMD('!cumple', message)) {
+        const time = func.alberMarqui();
+        const str = !time.includes('0') ? `¡El cumple de nuestro querido streamer es el 26/11, ya solo queda ${func.alberMarqui()}!` : 'El cumple de Marqui ha sido el día 26/11';
+        client.say(channel, str);
+    }
     if(msgIncludesCMD('!resetvoice', message)){
         if(!func.resetVoiceForUser(tags.username)) client.say(channel, `Has sobrepasado el limite de veces que puedes usar este comando`);
     }
