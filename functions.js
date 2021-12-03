@@ -199,6 +199,10 @@ function talkToLocal(username, text) {
         }
     });
 
+    if(username === 'noctismaiestatem') username = 'modnoctis';
+    if(username === 'leyenda2114') username = 'modleyenda';
+    if(username === 'carljuez98') username = 'modcarljuez';
+
     text = `${username} dice ${text}`;
     let url = defineVoiceForUser({
         user: username,
@@ -302,6 +306,7 @@ function resetVoiceForUser(user){
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
+        // 'ttsalias': 'Establecerá un alias con el que el bot leerá tu nombre. No puede ser nada grosero o insultante además de no superar los 12 caracteres de longitud. EJ: !ttsalias elnenequeteama',
         'adivina': 'En cada partida se generará un número al azar del 1 al 50. Con !adivinaelnr puedes intentar adivinarlo, pero cuidado, solo tienes seis vidas. Si fallas se te restará una vida, por otro lado sí ganas se te sumará una. EJ: !adivinaelnr 13',
         'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
         'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
@@ -314,8 +319,8 @@ function resetVoiceForUser(user){
         'help': 'Este comando te devolverá la lista de comandos disponibles acorde a tu rango en el chat. Sí lo acompañas de algún otro comando te mostrará una descripción de lo que hace el comando especificado. EJ: !help tts'
     };
 
-    const broadcasterCMD = ['mostrarnr', 'rvidas', 'delete'];
-    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'incluir', 'excluir', 'deftts', 'delete', 'volumen', 'modcmd'];
+    const broadcasterCMD = ['mostrarnr', 'rvidas', 'delete', 'volumen', 'modcmd', 'incluir', 'excluir', 'code', 'setcode'];
+    const specialsCMD = ['sonido', 'tts', 'ttsinsulto', 'ttspiropo', 'resetvoice'];
 
     if (lvl == 0 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).filter(cmd => !specialsCMD.includes(cmd)).map(cmd => '!' + cmd).join(', ');
     if (lvl == 1 && menu == true) return Object.keys(main).filter(cmd => !broadcasterCMD.includes(cmd)).map(cmd => '!' + cmd).join(', ');

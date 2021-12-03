@@ -65,7 +65,7 @@ client.on('message', (channel, tags, message, self) => {
     //Check lvl and return parsed level for help command
     const checkLVL = (tags) => {
         if (tags.badges != null && tags.badges != undefined) {
-            if (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem') return 2;
+            if (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem' || tags.username == 'leyenda2114' || tags.username == 'carljuez98') return 2;
             if (tags.badges.hasOwnProperty('vip') || tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('founder') || tags.badges.hasOwnProperty('premium') || tags.badges.hasOwnProperty('subscriber')) return 1;
         }
         return 0;
