@@ -6,7 +6,6 @@ exports.piropos = [
     'No tengas miedo… sí que muerdo, pero muy suave.',
     'Quiero olvidarte, pero sin el “olvi”.',
     'Ni bañándome se me quitó todo lo sucio que quiero hacerte.',
-    'Si, por otro lado, prefieres algunos Piropos de amor cortos y bonitos, en esta selección encontrarás ideas más light.',
     '¿Por qué en vez de un beso de buenas noches no me das una noche de buenos besos?',
     '¡Me encanta tu camisa! Creo que combinaría a la perfección con mis sábanas...',
     'Si yo fuera un avión y tú mi aeropuerto aterrizaría todos los días en tu exquisito cuerpo.',
