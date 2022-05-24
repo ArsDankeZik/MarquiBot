@@ -237,7 +237,7 @@ client.on('message', (channel, tags, message, self) => {
         else if(func.codeGame && func.codeGame.length > 2) client.say(channel, `El último código que me han registrado mis amos es ${func.codeGame.toUpperCase()}`);
     }
 
-    switch (message.toLowerCase()) {
+    switch (message.toLowerCase().trim()) {
         case '!insulto':
             client.say(channel, `${func.pickRandom(insultos)}`);
             break;
