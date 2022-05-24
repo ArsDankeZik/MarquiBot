@@ -17,6 +17,7 @@ var joinSayHi = false;
 var OBJECT_PEOPLE_LIFES = {};
 var USER_OBJECT = {};
 var EXCEPT_FROM_PERMISSION_LIST = [];
+var USER_SALUTED = [];
 
 const dado = (n) => {
     const min = 1;
@@ -379,3 +380,4 @@ module.exports.resetVoiceForUser = resetVoiceForUser;
 module.exports.setVolume = setVolume;
 module.exports.helpMenu = helpMenu;
 module.exports.alberMarqui = alberMarqui;
+module.exports.USER_SALUTED = USER_SALUTED;

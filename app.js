@@ -222,8 +222,9 @@ client.on('message', (channel, tags, message, self) => {
         if (!menu) client.say(channel, `${func.helpMenu(checkLVL(tags), false, msg)}`);
     }
 
-    if(message.toLowerCase().includes('hola')){
+    if (!func.USER_SALUTED.includes(tags.username)) {
         client.say(channel, `Hola a ti también, @${tags.username}`);
+        func.USER_SALUTED.push(tags.username);
     }
 
     if(intersect(func.RESTRICTED_WORDS, message.toLowerCase().split(' '))) client.say(channel, `Cuidado con lo que dices, @${tags.username}, o dependiendo de la gravedad de tus palabras uno de nuestros queridos mods te puede poner un timeout/ban`);
