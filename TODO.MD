@@ -1,4 +1,0 @@
-- AHORCADO
-- Incorporar audio de alv, bro, ufo, wassaaaaaaa
-- Enviar mensaje a @everyone en dc al abrir el bot
-- Modificado el mensaje de permisos erróneo por algo de más de ayuda

@@ -283,11 +283,3 @@ client.on('message', (channel, tags, message, self) => {
             break;
     };
 });
-
-    // if (msgIsCMD('!delete', message)) {
-    //     if (isModWhoCalls(tags)) {
-    //         console.log(tags);
-    //         whisperClient.whisper('noctismaiestatem', 'Utilizando el comando !delete');
-    //         client.deletemessage(channel, tags.id);
-    //     }
-    // }
