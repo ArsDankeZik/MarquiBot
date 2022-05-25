@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+
+<head>
+        <title>Chrome Speech Synthesis Service</title>
+        <!-- <link rel="stylesheet" type="text/css" href="/stylesheets/style.css" /> -->
+        <style>
+                *,
+                *:before,
+                *:after {
+                        -moz-box-sizing: border-box;
+                        -webkit-box-sizing: border-box;
+                        box-sizing: border-box;
+                }
+
+                html {
+                        font-family: Helvetica, Arial, sans-serif;
+                        font-size: 100%;
+                        background: #FFF;
+                }
+
+                #page-wrapper {
+                        width: 700px;
+                        background: #FFFFFF;
+                        padding: 1em;
+                        margin: 1em auto;
+                        border-top: 5px solid #69c773;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+                }
+
+                h1 {
+                        margin-top: 0;
+                }
+
+                #msg {
+                        font-size: 0.9em;
+                        line-height: 1.4em;
+                }
+
+                #msg.not-supported strong {
+                        color: #CC0000;
+                }
+
+                #msg.reference strong {
+                        color: #69c773;
+                        font-style: italic;
+                        font-size: 0.7em;
+                        line-height: 1.2em;
+                }
+
+                #speech-msg {
+                        width: 100%;
+                        padding: 0.5em;
+                        font-size: 1.2em;
+                        border-radius: 3px;
+                        border: 1px solid #D9D9D9;
+                        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1) inset;
+                }
+
+                #remoteID {
+                        width: 55%;
+                        padding: 0.5em;
+                        border-radius: 3px;
+                        border: 1px solid #D9D9D9;
+                        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1) inset;
+                }
+
+                input[type="range"] {
+                        width: 300px;
+                }
+
+                label {
+                        display: inline-block;
+                        line-height: 1.4em;
+                        float: left;
+                        width: 150px;
+                }
+
+                output {
+                        width: 50px;
+                        vertical-align: super;
+                        float: left;
+                        color: silver;
+                }
+
+                .option {
+                        margin: 1em 0;
+                }
+
+                #speak {
+                        display: inline-block;
+                        border-radius: 3px;
+                        border: none;
+                        font-size: 0.9rem;
+                        padding: 0.5rem 0.8em;
+                        background: #69c773;
+                        border-bottom: 1px solid #498b50;
+                        color: white;
+                        -webkit-font-smoothing: antialiased;
+                        font-weight: bold;
+                        margin: 0;
+                        width: 100%;
+                        text-align: center;
+                }
+
+                button {
+                        display: inline-block;
+                        border-radius: 3px;
+                        border: none;
+                        font-size: 0.9rem;
+                        padding: 0.5rem 0.8em;
+                        background: #69c773;
+                        border-bottom: 1px solid #498b50;
+                        color: white;
+                        -webkit-font-smoothing: antialiased;
+                        font-weight: bold;
+                        margin: 0;
+                        width: 100%;
+                        text-align: center;
+                }
+
+                button:hover,
+                button:focus {
+                        opacity: 0.75;
+                        cursor: pointer;
+                }
+
+                button:active {
+                        opacity: 1;
+                        box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1) inset;
+                }
+
+                #messages {
+                        list-style-type: none;
+                        margin: 0;
+                        padding: 0;
+                }
+
+                #messages li {
+                        font-size: 0.9em;
+                        padding: 5px 10px;
+                }
+
+                #messages li:nth-child(odd) {
+                        font-size: 0.9em;
+                        background: #eee;
+                }
+        </style>
+</head>
+
+<body>
+        <div id="page-wrapper">
+                <h1>Chrome Speech Synthesis Service</h1>
+
+                <p id="msg"></p>
+                <input type="text" name="speech-msg" id="speech-msg" x-webkit-speech value="Habla conmigo">
+
+                <div class="option">
+                        <label for="voice">Voice</label>
+                        <span name="voiceOutput" id="voiceOutput"></span>
+                        <select name="voice" id="voice"></select>
+                </div>
+                <div class="option">
+                        <label for="volume">Volume</label>
+                        <output name="volumeOutput" id="volumeOutput" for="volume">1.0</output>
+                        <input type="range" min="0.0" max="1.0" step="0.1" name="volume" id="volume" value="1.0"
+                                oninput="volumeOutput.value=this.value">
+                </div>
+                <div class="option">
+                        <label for="rate">Rate</label>
+                        <output name="rateOutput" id="rateOutput" for="rate">1.0</output>
+                        <input type="range" min="0.3" max="1.8" step="0.1" name="rate" id="rate" value="1"
+                                oninput="rateOutput.value=' '+this.value">
+                </div>
+                <div class="option">
+                        <label for="pitch">Pitch</label>
+                        <output name="pitchOutput" id="pitchOutput" for="pitch">1.0</output>
+                        <input type="range" min="0.3" max="1.8" step="0.1" name="pitch" id="pitch" value="1"
+                                oninput="pitchOutput.value=this.value">
+                </div>
+                <div class="option">
+                        <label>Your Speaker ID</label>
+                        <p id="mySpeakerID"><%= speakerIDLabel %></p>
+                        <input type='hidden' name="speakerID" id="speakerID" value=<%= speakerID %>>
+                </div>
+                <div class="option">
+                        <label for="remoteID">Remote Speaker ID</label>
+                        <input type="text" placeholder="optionally, you enter remote speakerID" id="remoteID"
+                                name="remoteID">
+                </div>
+                <button id="speak" name="speak">Speak</button>
+        </div>
+        <div>
+                <center><span> Need more to say? Please try, </span>
+                        <a href="#" onclick="OpenInNewTab('/rap'); return false;">"Yo, Rap!"</a>
+                </center>
+        </div>
+        <div>
+                <ul id="messages"></ul>
+        </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="speech-synthesis.js"></script>
+        <script src="_languageData.js"></script>
+        <script src="guessLanguage.js"></script>
+</body>
+
+</html>

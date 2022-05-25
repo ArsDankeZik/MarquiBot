@@ -1,23 +1,219 @@
-const insultos = require('./insultos').insultos;
-const piropos = require('./piropos').piropos;
 const sound = require('sound-play');
 const request = require('request');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const moment = require('moment');
 
 const SUBS = true; // CONSTANTE GLOBAL PARA HABILITAR CIERTOS COMANDOS SOLO PARA SUBS/VIPS/MODS (no es necesario por más tiempo)
 const RESTRICTED_WORDS = ['nigga', 'nigger', 'nigg', 'negrata', 'maricón', 'maricon'];
+var bots = ['streamelements', 'streamlabs', 'nightbot', 'dixperbro'];
 var VOL = 1;
+var alreadyConnected = false;
 var magicNumber = getRandInt(1, 50);
 var previousNumber = -1;
 var codeGame = '';
-var joinSayHi = false;
 var OBJECT_PEOPLE_LIFES = {};
 var USER_OBJECT = {};
 var EXCEPT_FROM_PERMISSION_LIST = [];
 var USER_SALUTED = [];
+var streamerName = 'AlberMarqui';
+var streamerBirthday = '00/00/0000';
+var socialNetworks = {
+    'youtube': '',
+    'instagram': 'https://bit.ly/3ky9kv5',
+    'twitter': 'https://bit.ly/3Fb6vba',
+    'facebook': '',
+    'snapchat': '',
+    'discord': 'https://discord.gg/d3xTjTwMXn',
+    'website': '',
+    'telegram': '',
+    'tiktok': 'https://bit.ly/3aoqglF'
+};
+
+//Normalize cmd and check if include cmd
+const msgIncludesCMD = (cmd, message) => message.toLowerCase().includes(cmd) ? true : false;
+//Normalize cmd and check if cmd and message match
+const msgIsCMD = (cmd, message) => message.toLowerCase().split(' ')[0] == cmd ? true : false;
+//Restrict perms on user doesn't matter if have vip, sub, mod
+const excludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST.push(user);
+const deleteFromExcludeFromPermissions = (user) => EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST.filter(r => r != user);
+
+const checkBotFromList = (username) => {
+    return bots.includes(username);
+};
+
+//Check lvl and return parsed level for help command
+const checkLVL = (tags) => {
+    if (tags.badges != null && tags.badges != undefined) {
+        if (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem') return 2;
+        if (tags.badges.hasOwnProperty('vip') || tags.badges.hasOwnProperty('moderator') || tags.badges.hasOwnProperty('founder') || tags.badges.hasOwnProperty('premium') || tags.badges.hasOwnProperty('subscriber')) return 1;
+    }
+    return 0;
+};
+
+const isCustomReward = (tags) => {
+    tags.hasOwnProperty('custom-reward-id') ? console.log(`El ID del custom reward es: ${tags['custom-reward-id']}`) : null;
+    return tags.hasOwnProperty('custom-reward-id');
+};
+
+const showNetworks = (net = 'all') => {
+    const upper = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+    if (net == 'all') {
+        const data = Object.keys(socialNetworks).map((v, i) => {
+            if (socialNetworks[v]) return `${upper(v)}: ${socialNetworks[v]}`;
+        });
+
+        return data.filter(r => r ? r : null).join(', ');
+    } else return socialNetworks[net] ? socialNetworks[net] : null;
+};
+
+const modCMD = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if(msgIncludesCMD('!modcmd', message) && isModWhoCalls(tags)){
+        if(msgIncludesCMD('sonido', message)){
+            const params = [channel, tags, message, '!modcmd sonido', false, [], client];
+            const value = cleanCommandListener(params);
+            playSound(value);
+        }
+    }
+};
+
+const meMide = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if (msgIncludesCMD('!memide', message)) {
+        const params = [channel, tags, message, '!memide', false, [], client];
+        const value = cleanCommandListener(params);
+        let memide = tags.username.toLowerCase() != 'noctismaiestatem' ? getRandInt(1, 35) : getRandInt(17, 35);
+        const frase = (cm) => {
+            if (cm > 0 && cm <= 13) return `Según la RAE tu pene de ${cm} cm pasa a ser una pena`;
+            else if (cm > 13 && cm <= 22) return `Tu pene de ${cm} cm no es para tanto a no ser que sepas usarlo`;
+            else if (cm > 22 && cm <= 35) return `Este pene de ${cm} cm está hecho para matar y no para dar placer`;
+            else return `No he podido calcular tu pene`;
+        }
+
+        client.say(channel, `@${tags.username}: ${frase(memide)}`);
+    }
+};
+
+const setVolumen = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if (msgIncludesCMD('!volumen', message)) {
+        if (isModWhoCalls(tags)) {
+            const params = [channel, tags, message, '!volumen', true, [], client];
+            const value = cleanCommandListener(params);
+
+            if (value) {
+                n = parseFloat(value);
+                (n >= 0.0 && n <= 2.0) ? VOL = n: VOL = 0.85;
+                console.log(`New volume set to: ${VOL}`);
+            }
+            else console.error(channel, 'User in exclude list, no perms or unexpected error');
+        }
+    }
+};
+
+const setCode = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if(msgIncludesCMD('!setcode', message)){
+        if(isModWhoCalls(tags)){
+            const params = [channel, tags, message, '!setcode', true, [], client];
+            const code = cleanCommandListener(params);
+            
+            if(code != true){
+                codeGame = code;
+                client.say(channel, 'El código fue establecido');
+            } else client.say(channel, `Esto no tiene sentido para mi`);
+        }
+    }
+};
+
+const showCode = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if(msgIncludesCMD('!code', message)){
+        if(codeGame && codeGame.length > 2) {
+            const codeGamePrint = codeGame.includes('http') ? codeGame : codeGame.toUpperCase();
+            client.say(channel, `El último código que soy capaz de recordar es el ${codeGamePrint}`);
+        }
+        else client.say(channel, `No me han asignado aún ningún código...`);   
+    }
+};
+
+const resetVoice = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if(msgIncludesCMD('!resetvoice', message)){
+        if(!resetVoiceForUser(tags.username)) client.say(channel, `Has sobrepasado el limite de veces que puedes usar este comando`);
+    }
+};
+
+const excluir = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if (msgIncludesCMD('!excluir', message)) {
+        if (isModWhoCalls(tags)) {
+            const params = [channel, tags, message, '!excluir', true, [], client];
+            const username = cleanCommandListener(params);
+            if (username) excludeFromPermissions(username);
+            else console.error(channel, 'User in exclude list, no perms or unexpected error');
+        }
+    }
+};
+
+const incluir = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if (msgIncludesCMD('!incluir', message)) {
+        if (isModWhoCalls(tags)) {
+            const params = [channel, tags, message, '!incluir', true, [], client];
+            const username = cleanCommandListener(params);
+            if (username) deleteFromExcludeFromPermissions(username);
+            else console.error(channel, 'User in exclude list, no perms or unexpected error');
+        }
+    }
+};
+
+const piropoInsulto = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if (msgIncludesCMD('!ttsinsulto', message)) {
+        const params = [channel, tags, message, '!ttsinsulto', true, EXCEPT_FROM_PERMISSION_LIST, client];
+        const value = cleanCommandListener(params);
+
+        if (value) {
+            talkToLocal(tags.username, pickRandom(insultos), 'es');
+        } else console.error(channel, 'User in exclude list, no perms or unexpected error');
+    }
+
+    if (msgIncludesCMD('!ttspiropo', message)) {
+        const params = [channel, tags, message, '!ttspiropo', true, EXCEPT_FROM_PERMISSION_LIST, client];
+        const value = cleanCommandListener(params);
+
+        if (value) {
+            talkToLocal(tags.username, pickRandom(piropos), 'es');
+        } else console.error(channel, 'User in exclude list, no perms or unexpected error');
+    }
+};
+
+const tts = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if (msgIsCMD('!tts', message)) {
+        const params = [channel, tags, message, '!tts', true, EXCEPT_FROM_PERMISSION_LIST, client];
+        const value = cleanCommandListener(params);
+
+        if (value) {
+            talkToLocal(tags.username, value, 'es');
+        } else console.error(channel, 'User in exclude list, no perms or unexpected error');
+    }
+};
+
+const adivina = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if (message.toLowerCase().includes('!adivina')) {
+        msg = message.replace('!adivina', '').trim();
+        client.say(channel, `${ takeAGuess(msg, tags.username) }`);
+    }
+};
 
 const dado = (n) => {
     const min = 1;
@@ -25,6 +221,143 @@ const dado = (n) => {
     const rand = (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) % (max - min + 1)) + min;
     return rand;
 };
+
+const tirarDado = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if (msgIncludesCMD('!dado', message)) {
+        const params = [channel, tags, message, '!dado', false, [], client];
+        let value = cleanCommandListener(params);
+        if (value == undefined || value == null || value == true) value = 6;
+        console.log(value);
+        if (!isNaN(value)) {
+            client.say(channel, `Has sacado un ${dado(value)}`);
+        }
+    }
+};
+
+const rVidas = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if (msgIncludesCMD('!rvidas', message)) {
+        msg = message.toLowerCase().replace('!rvidas', '').trim();
+        if (tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem')) {
+            if (!msg || msg.length == 0) client.say(channel, `El comando es !rvidas nombreusuario (sin @)`);
+            else {
+                registerUserAndCount(msg, 'reset');
+                client.say(channel, `Se han restablecido las vidas de ${ tags.username }`);
+            }
+        }
+    }
+};
+
+const displayHelpMenu = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if (msgIncludesCMD('!help', message)) {
+        msg = message.replace('!help', '').trim();
+        msg = msg.replace('!', '');
+        menu = msg.length == 0;
+
+        if (menu) client.say(channel, `Escribe !help comando(sustituye comando por el comando que quieras consultar, no me seas borrego) para saber más acerca de un comando. Comandos disponibles: ${ helpMenu(checkLVL(tags), true, null) }`);
+        if (!menu) client.say(channel, `${ helpMenu(checkLVL(tags), false, msg) }`);
+    }
+};
+
+const sayHello = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if (message.toLowerCase().includes('hola')) {
+        if (!USER_SALUTED.includes(tags.username)) {
+            client.say(channel, `Hola a ti también, @${tags.username}`);
+            USER_SALUTED.push(tags.username);
+        }
+    }
+};
+
+const intersect = (haystack, arr) => {
+    return arr.some(v => haystack.includes(v.toLowerCase()));
+};
+
+const instersections = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    if(intersect(RESTRICTED_WORDS, message.toLowerCase().split(' '))) client.say(channel, `Cuidado con lo que dices, @${tags.username}, o dependiendo de la gravedad de tus palabras uno de nuestros queridos mods te puede poner un timeout/ban`);
+    if(intersect(['puta', 'furcia', 'zorra', 'guarra', 'maricona', 'malparido'], message.toLowerCase().split(' '))) client.say(channel, `Quizás deberías moderar tu lenguaje estimado/a @${tags.username}`);
+    if(intersect(['twitter', 'tw'], message.toLowerCase().split(' ')) && showNetworks('twitter')) client.say(channel, `El twitter de ${ streamerName } es ${ showNetworks('twitter') }`);
+    if(intersect(['instagram', 'ig'], message.toLowerCase().split(' ')) && showNetworks('instagram')) client.say(channel, `El instagram de ${ streamerName } es ${ showNetworks('instagram') }`);
+    if(intersect(['discord', 'dc'], message.toLowerCase().split(' ')) && showNetworks('discord')) client.say(channel, `El discord del canal es ${ showNetworks('discord') }`);
+    if(intersect(['código', 'codigo', 'code'], message.toLowerCase().split(' ')) || intersect(message.toLowerCase().split(' '), ['código', 'codigo', 'code'])) {
+        console.log('Me ha parecido que han pedido el código del juego');
+        if(!codeGame && !codeGame.length > 2) console.log('¿Es posible que no haya ningún código establecido?');
+        else if(codeGame && codeGame.length > 2) client.say(channel, `El último código que me han registrado mis amos es ${codeGame.toUpperCase()}`);
+    }
+};
+
+const switchCMD = (_this) => {
+    const [client, channel, message, tags] = _this;
+
+    switch (message.toLowerCase().trim()) {
+        case '!log':
+            // hace un sequimiento de los tags del usuario (mod o broadcaster) por consola
+            if (isModWhoCalls(tags)) {
+                console.log(message);
+                console.log(tags);
+            }
+            break;
+        case '!log-user':
+            // hace un seguimiento de los tags del cualquier tipo de usuario por consola
+            console.log(message);
+            console.log(tags);
+            break;
+        case '!rango':
+            client.say(channel, `${dimeMiRango(tags.username, tags.badges)}`);
+            break;
+        case '!hora':
+            client.say(channel, `La hora actual en el Reino de España es ${hora()}`);
+            break;
+        case '!donde':
+            client.say(channel, `${donde()}`);
+            break;
+        case '!cumple':
+            client.say(channel, `El cumple de ${ streamerName } es el ${ streamerBirthday } y quedan ${ daysToBirthday(streamerBirthday.split('/')[1], streamerBirthday.split('/')[0]) } días`);
+            break;
+        case '!insulto':
+            client.say(channel, `${pickRandom(insultos)}`);
+            break;
+        case '!piropo':
+            client.say(channel, `${pickRandom(piropos)}`);
+            break;
+        case '!vidas':
+            client.say(channel, `${registerUserAndCount(tags.username, 'vidas')}`);
+            break;
+        case '!yt':
+            if(showNetworks('youtube')) client.say(channel, `${ showNetworks('youtube') }`);
+            break;
+        case '!dc':
+            if(showNetworks('discord')) client.say(channel, `${ showNetworks('discord') }`);
+            break;
+        case '!ig':
+            if(showNetworks('instagram')) client.say(channel, `${ showNetworks('instagram') }`);
+            break;
+        case '!tw':
+            if(showNetworks('twitter')) client.say(channel, `${ showNetworks('twitter') }`);
+            break;
+        case '!social':
+            if(showNetworks()) client.say(channel, `${ showNetworks() }`);
+            break;
+        case '!redes':
+            if(showNetworks()) client.say(channel, `${ showNetworks() }`);
+            break;
+        case '!mostrarnr':
+            if (tags.badges != null && tags.badges != undefined && (tags.badges.hasOwnProperty('broadcaster') || tags.username == 'noctismaiestatem'))
+                if (isModWhoCalls(tags)) console.log(channel, `El número es ${magicNumber}`);
+            break;
+        case '!creador':
+            client.say(channel, 'El nombre de mi creador es @noctismaiestatem (https://twitch.tv/noctismaiestatem)');
+            break;
+    };
+};
+
 
 const hora = () => {
     let dt = new Date();
@@ -40,10 +373,8 @@ const hora = () => {
 };
 
 const donde = () => {
-    return `Alber Marqui vive en un remoto, 
-bello y pintoresco pueblo de la Comunidad de Madrid, 
-dentro del Reino de España`;
-}
+    return `${ streamerName } vive en un remoto, bello y pintoresco pueblo de la Comunidad de Madrid, dentro del Reino de España`;
+};
 
 const pickRandom = (arr) => {
     const min = 0;
@@ -51,16 +382,19 @@ const pickRandom = (arr) => {
     const rand = () => (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) % (max - min + 1)) + min;
 
     return arr[rand()];
-}
+};
 
 const dimeMiRango = (user, badge) => {
     let str = '';
+
+    if(!badge) return `${ user } no tiene ningún rango`;
+
     Object.keys(badge).forEach((rango, index) => {
         index === 0 ? str += rango : str += ', ' + rango;
     });
 
     return `@${user} tiene los siguientes rangos: ${str}`;
-}
+};
 
 function setVolume(n) {
     (n >= 0.0 && n <= 2.0) ? VOL = n: VOL = 0.85;
@@ -179,7 +513,8 @@ function takeAGuess(nr, name) {
 function registerUserAndCount(name, opt) {
     const totalLifes = 6;
 
-    if(opt && opt === 'vidas') return `Te quedan ${OBJECT_PEOPLE_LIFES[name]} vidas`;
+    if (opt && opt === 'vidas' && Object.keys(OBJECT_PEOPLE_LIFES).length == 0) return `Te quedan ${totalLifes} vidas`;
+    if (opt && opt === 'vidas') return `Te quedan ${OBJECT_PEOPLE_LIFES[name]} vidas`;
     if (!OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
 
     if (opt === 'reset' && OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
@@ -188,7 +523,8 @@ function registerUserAndCount(name, opt) {
     if (opt === 'sum') OBJECT_PEOPLE_LIFES[name] += 1;
 }
 
-function talkToLocal(username, text) {
+
+function talkToLocal(username, text, lang='es') {
     if(!username || !text) return;
     if(text.length < 2 || username.length < 2) return;
     if(text == 'true' || text == true) return;
@@ -200,16 +536,15 @@ function talkToLocal(username, text) {
         }
     });
 
-    if(username === 'noctismaiestatem') username = 'modnoctis';
-    if(username === 'leyenda2114') username = 'modleyenda';
-    if(username === 'carljuez98') username = 'modcarljuez';
-
     text = `${username} dice ${text}`;
-    let url = defineVoiceForUser({
+
+    let url = '';
+    if (lang == 'es') url = defineVoiceForUser({
         user: username,
         msg: text,
     });
 
+    url = url.replaceAll('noctismaiestatem', 'modnoctis').replaceAll('carljuez98', 'modcarljuez').replaceAll('leyenda2114', 'modleyenda');
     if (url) {
         axios.get(encodeURI(url)).catch(err => console.error(err));
     } else console.error(url);
@@ -236,7 +571,6 @@ function defineVoiceForUser(userVoice) {
     const getRandomPitch = (min, max) => (Math.random() * (min - max) + max).toFixed(2);
     const getRandomRate = (min, max) => (Math.random() * (min - max) + max).toFixed(2);
     const getRandomVoice = () => ['Helena', 'Pablo', 'Laura'][getRandInt(0, 2)];
-
     if (USER_OBJECT && !USER_OBJECT.hasOwnProperty(userVoice.user)) {
         USER_OBJECT[userVoice.user] = {
             rate: getRandomRate(1.25, 1.65),
@@ -263,7 +597,7 @@ function resetVoiceForUser(user){
             reset: 0
         };
     }
-
+    
     if (USER_OBJECT && USER_OBJECT.hasOwnProperty(user) && USER_OBJECT[user].reset < 3) {
         USER_OBJECT[user] = {
             rate: getRandomRate(1.25, 1.65),
@@ -271,7 +605,6 @@ function resetVoiceForUser(user){
             voice: getRandomVoice(),
             reset: USER_OBJECT[user].reset+1
         };
-        console.log(USER_OBJECT[user]);
         console.log(`La voz de ${user} ha cambiado`);
         return true;
     }
@@ -307,7 +640,6 @@ function resetVoiceForUser(user){
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
-        // 'ttsalias': 'Establecerá un alias con el que el bot leerá tu nombre. No puede ser nada grosero o insultante además de no superar los 12 caracteres de longitud. EJ: !ttsalias elnenequeteama',
         'adivina': 'En cada partida se generará un número al azar del 1 al 50. Con !adivinaelnr puedes intentar adivinarlo, pero cuidado, solo tienes seis vidas. Si fallas se te restará una vida, por otro lado sí ganas se te sumará una. EJ: !adivinaelnr 13',
         'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
         'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
@@ -338,46 +670,156 @@ function resetVoiceForUser(user){
     return 'Hmmm. No debería haber pasado esto, avisa a @NoctisMaiestatem. Mientras tanto reinicia el bot.';
 }
 
-function alberMarqui(){
-    let now = moment();
-    let birth = moment([now.year(), 10, 27, 0, 0]);
-    if(birth.diff(now, 'hours') <= 0) return `${birth.diff(now, 'months')} meses`;
-    if(birth.diff(now, 'hours') >= 24) return `${birth.diff(now, 'days')} días`;
-    else if(birth.diff(now, 'hours') < 24) return `${birth.diff(now, 'hours')} horas`;
-    else if(birth.diff(now, 'days') > 30) return `${birth.diff(now, 'months')} meses`;
-}
 
-module.exports.VOL = VOL;
-module.exports.piropos = piropos;
-module.exports.insultos = insultos;
-module.exports.magicNumber = magicNumber;
-module.exports.previousNumber = previousNumber;
-module.exports.codeGame = codeGame;
-module.exports.joinSayHi = joinSayHi;
-module.exports.OBJECT_PEOPLE_LIFES = OBJECT_PEOPLE_LIFES;
-module.exports.USER_OBJECT = USER_OBJECT;
-module.exports.EXCEPT_FROM_PERMISSION_LIST = EXCEPT_FROM_PERMISSION_LIST;
-module.exports.SUBS = SUBS;
-module.exports.RESTRICTED_WORDS = RESTRICTED_WORDS;
-module.exports.dado = dado;
-module.exports.hora = hora;
-module.exports.donde = donde;
-module.exports.pickRandom = pickRandom;
-module.exports.dimeMiRango = dimeMiRango;
-module.exports.playSound = playSound;
-module.exports.checkFileExists = checkFileExists;
-module.exports.downloadFile = downloadFile;
-module.exports.getRandInt = getRandInt;
-module.exports.isBroadcasterWhoCalls = isBroadcasterWhoCalls;
-module.exports.isModWhoCalls = isModWhoCalls;
-module.exports.onlySubsAllowed = onlySubsAllowed;
-module.exports.takeAGuess = takeAGuess;
-module.exports.registerUserAndCount = registerUserAndCount;
-module.exports.talkToLocal = talkToLocal;
-module.exports.cleanCommandListener = cleanCommandListener;
-module.exports.defineVoiceForUser = defineVoiceForUser;
-module.exports.resetVoiceForUser = resetVoiceForUser;
-module.exports.setVolume = setVolume;
-module.exports.helpMenu = helpMenu;
-module.exports.alberMarqui = alberMarqui;
-module.exports.USER_SALUTED = USER_SALUTED;
+const piropos = [
+    'Quien fuera caramelo para poder derretirse en tu boca.',
+    'Mi amor, tengo la caja fuerte para guardar ese lingote de oro.',
+    '¿Y si nos comemos unos tacos y yo te a-taco a besos?',
+    'Algún día Tom se comerá a Jerry, Silvestre a Piolín y yo a ti.',
+    'No tengas miedo… sí que muerdo, pero muy suave.',
+    'Quiero olvidarte, pero sin el “olvi”.',
+    'Ni bañándome se me quitó todo lo sucio que quiero hacerte.',
+    'Si, por otro lado, prefieres algunos Piropos de amor cortos y bonitos, en esta selección encontrarás ideas más light.',
+    '¿Por qué en vez de un beso de buenas noches no me das una noche de buenos besos?',
+    '¡Me encanta tu camisa! Creo que combinaría a la perfección con mis sábanas...',
+    'Si yo fuera un avión y tú mi aeropuerto aterrizaría todos los días en tu exquisito cuerpo.',
+    'Ojalá fueras sol y me dieras todo el día.',
+    'Quisiera ser patata frita para acompañar ese lomo.',
+    'Si fueras salsa, estaría mojando todo el día.',
+    'Conmigo nunca te va a faltar amor. Y si te falta, lo hacemos…',
+    'Tu ropa me da miedo. ¿Puedes quitártela?',
+    'Dime como te llamas y así lograré ponerle un nombre a mis sueños',
+    'Como mejor está ese cuerpo es sin ropa que lo adorne.',
+    '¡Cuidado! Estás entrando en zona obligatoria de besos.',
+    'Eres como la zapatilla de mi madre. Te veo venir y se me acelera el corazón.',
+    'Ni en clase de matemáticas me pierdo tanto como en tu mirada...',
+    'Estás como Paco… Paco-merte a besos.',
+    'Mándame tu ubicación que quiero saber dónde está mi tesoro.',
+    '¡Quién fuera paloma para posarme en esa rama!',
+    'Ya tengo el Netflix, sólo me faltas tú a mi lado. Y date prisa, que sólo es el mes de prueba.',
+    'Por darte un bocado me salto yo la dieta.',
+    'Si vas a estar en mi cabeza todo el día, al menos ponte algo de ropa...',
+    'Contigo me pasaría cien años en cuarentena.',
+    'Ojalá te roben la cama y te vengas a dormir conmigo.',
+    '¡Ya quisiera la Guardia Civil tener ese cuerpo!',
+    'No sé si eres Bill Gates, pero pareces muy rico.',
+    'Dicen que no hay hombre bueno, pero quiero descubrir si tú eres la excepción.',
+    'Si estar bueno es un pecado, no tienes perdón de Dios.',
+    'Si te gustan las alegrías, aquí tengo yo una para tu cuerpo.',
+    'No seré agricultor, pero si me dejas te planto unos besos.',
+    'Entre nosotros hay más química que en toda la tabla periódica.',
+    '¡Quién fuera cinturón para recorrer esa cintura!',
+    'Si supieras cuánto pienso en ti me denunciarías por acoso mental.',
+    'Cómo le gustaría a mi madre que tú fueses su nuera...',
+    'Quién fuera zapatero para trabajar ese cuero.',
+    '¿No te da claustrofobia pasar todo el día en mi cabeza?',
+    '¡Qué perrito más mono! ¿Tiene número de teléfono?',
+    'Adán se comió la manzana, pero yo por ti me comería la frutería entera...',
+    'Si fuera alcalde te hacía una plaza en mitad del pueblo.',
+    'El amor será ciego, pero hay que ver lo que alegras la vista...',
+    'Qué bonitos son los días de viento para faldas como esa.',
+    '¡Cuéntame qué comes para estar tan buena!',
+    'Me gusta mucho una persona, pero no te voy a decir quién es.',
+    'Tarjeta amarilla por la falta que me haces.',
+    'Lo mejor de ti es todo lo que te hace tan tú.',
+    'Tienes algo pegado en el culo… ¡Mi mirada!',
+    'Ni la miopía me impide ver lo guapa que eres.',
+    'Si una amiga es un tesoro, tú eres una mina de oro.',
+    '¡Con amigas como tú, quién necesita novio!',
+    'Tú no necesitas que te dé el sol, tú brillas con luz propia.',
+    'Por ti, mato un elefante a chancletazos.',
+    'Aparte de la comida, tú eres lo que más me gusta.',
+    'Sólo estoy a gusto cuando estoy contigo. Eres el pantalón del pijama de mi vida.',
+    '¿Sabes por lo que estoy agradecida hoy? Por ser amigas. Y por la Nutella.',
+    'No es fácil ser yo. Por eso te necesito a ti, amiga.',
+    '¿Sabes lo que es increíble? Un pastel de chocolate... ¡ah, y tú tampoco estás mal!',
+    'La parte más difícil de ser amigos es fingir que mis otros amigos me gustan tanto como tú.',
+    'El amor será ciego, pero hay que ver lo mucho que alegras la vista.',
+    'Con esos ojos mirándome, ya no me hace falta la luz del sol.',
+    'Por la luna daría un beso, daría todo por el sol, pero por la luz de tu mirada, doy mi vida y corazón.',
+    'Si yo fuera un avión y tu un aeropuerto, me la pasaría aterrizando por tu hermoso cuerpo.',
+    'Me gusta el café, pero prefiero tener-té.',
+    'No eres google, pero tienes todo lo que yo busco.',
+    'Mis ganas de ti no se quitan, se acumulan.',
+    'Cuando te multen por exceso de belleza, yo pagaré tu fianza.',
+    'Si cada gota de agua sobre tu cuerpo es un beso, entonces quiero convertirme en aguacero.',
+    'Estas como para invitarte a dormir, y no dormir.',
+    'Si tu cuerpo fuera cárcel y tus brazos cadenas, ese sería el lugar perfecto para cumplir condena.',
+    'Qué bonitos ojos tienes, tan redondos como el sol, se parecen a los ceros que me pone el profesor.'
+];
+
+const insultos = [
+    'Hablando de madres: ¿es verdad que la tuya es tan gorda que tiene su propio código postal?',
+    '¿Sabes?, yo podría haber sido tu padre, pero el tipo que estaba a mi lado tenía el dinero exacto',
+    'Come-albóndigas',
+    'Perroflauta',
+    'Eres la versión antropomórfica de la Comic Sans',
+    'Cara de limón podrído',
+    'Eres más pesado que matar a un cerdo a besos',
+    'Tienes halitosis…pero si lo supieras no hablarías tanto',
+    'Tu mujer debe disfrutar cada vez que juegas. Más que nada porque por unas horas no tiene que aguantarte.',
+    '¿Alguien te dijo alguna vez que eres una persona increíblemente promedio?',
+    '¿Te das cuenta de que la gente solo te tolera?',
+    'Deberías tratar de comer un poco de maquillaje para ser más bella por dentro.',
+    'Disculpa pero tengo cosas mejores con las que perder el tiempo.',
+    'Eres tan brillante como un agujero negro y el doble de denso.',
+    'No tengo una respuesta apropiada para alguien de tu edad mental.',
+    'Espero que el resto de tu día sea tan agradable como tú.',
+    'Hay 7 trillones de nervios en el cuerpo humano, y tú irritas todos.',
+    'La envidia es una enfermedad. Espero que te mejores.',
+    'La gente feliz no tiene necesidad de amargar a los demás.',
+    'Lástima que no puedas usar Photoshop en tu personalidad.',
+    'Me asombra ver cómo le pones tanto entusiasmo a algo tan obvio.',
+    'Me encanta cómo dices cosas obvias con la sensación de que descubriste algo.',
+    'Me niego a pelear con un oponente desarmado.',
+    'Mirar a alguien con impaciencia y decir: ¿Ya terminaste?',
+    'No se qué cualidades puedes tener que compensen esa actitud que tienes.',
+    'Puedo explicártelo pero no puedo entenderlo por ti.',
+    'Que tengas un buen día, en cualquier otro lugar.',
+    'Siento decirte que jamás pedí tu opinión. Gracias.',
+    'Te devuelvo tu nariz. Se había metido en mis asuntos.',
+    'Todas las personas que te amaron alguna vez estaban equivocados.',
+    'Todo el mundo puede ser estúpido alguna vez, pero tú abusas del privilegio.',
+    'Tu singular punto de vista nos ha dejado perplejo.',
+    'Ya que lo sabes todo, sabrás cuándo callarte.',
+    '¡Fuera! Eres veneno para mi sangre.',
+    '¿Cuál es el parentesco entre tus padres?',
+    'De no ser por la risa debería tenerte lastima.',
+    'Jamás has usado una palabra que obligue a alguien a buscar un diccionario.',
+    'Los asnos están hechos para cargar y, tu también.',
+    'Me arrepiento de los tediosos minutos que he pasado contigo.',
+    'No hay nada malo en ti que la reencarnación no pueda arreglar.',
+    'No iré a tu funeral, pero enviaré una bonita carta aprobándolo.',
+    'No tiene enemigos, pero es intensamente aborrecido por todos sus amigos.',
+    'Tienes todas las virtudes que odio y ninguno de los vicios que admiro.',
+    'Tu rostro es como febrero, lleno de escarcha, tormentas y nubosidad.'
+];
+
+
+module.exports = {
+    checkLVL,
+    checkBotFromList,
+    helpMenu,
+    playSound,
+    modCMD,
+    meMide,
+    setVolumen,
+    setCode,
+    showCode,
+    resetVoice,
+    excluir,
+    incluir,
+    piropoInsulto,
+    tts,
+    adivina,
+    tirarDado,
+    talkToLocal,
+    rVidas,
+    displayHelpMenu,
+    sayHello,
+    instersections,
+    switchCMD,
+    isCustomReward,
+    magicNumber,
+    alreadyConnected
+}
