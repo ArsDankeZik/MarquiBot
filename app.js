@@ -43,6 +43,11 @@ client.on('join', (channel, username, self) => {
     }
 });
 
+client.on('raided', (channel, username, viewers) => {
+    console.log(`${username} ha robado el canal!`);
+    if(viewers > 2) client.say(channel, `!so ${username}`);
+});
+
 client.on('message', (channel, tags, message, self) => {
     const _this = [client, channel, message, tags];
     if (self) return;
