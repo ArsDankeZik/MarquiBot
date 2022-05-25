@@ -403,25 +403,14 @@ function setVolume(n) {
 
 const playSound = (w) => {
     const baseURL = 'https://github.com/ArsDankeZik/MarquiBot/raw/main/sounds/';
-    const nameFiles = 'gemido,alertasubnormal,aplausosniños,bofetón,estastocandome,gota,pedo_mojado,pedo_normal,recalculando,siuuu,sorpresa_aplausos,suspense,whatsappweb,pegriloso,badumts'.split(',');
+    const nameFiles = 'gemido,alertasubnormal,aplausosniños,bofetón,estastocandome,gota,pedo_mojado,pedo_normal,recalculando,siuuu,sorpresa_aplausos,suspense,whatsappweb,pegriloso,badumts,ageofempires,among,banana,callalaboca,cerraelorto,discord,dorime,error,esecompa,esomentira,gilipollas,hellodarknessmyoldfriend,hellomf,hellothere,holajuancarlos,itwasthismoment,malditalisiada,mecagoentutia,mepicanloscocos,muertogtav,narutokun,nope,phubintro,quepaseeldesgraciado,quita,rajoyhacemosloquepodemos,risaibai,soyuntrolazo,troll,windows10error'.split(',');
 
     nameFiles.forEach(element => {
         const localPath = `sounds/${element}.mp3`
         if (!checkFileExists(localPath)) downloadFile(`${encodeURI(baseURL)}${encodeURI(element)}.mp3`, localPath);
     });
 
-    if (w === 'bofeton') sound.play(path.join(__dirname, "sounds/bofetón.mp3"), VOL);
-    if (w === 'pedo') sound.play(path.join(__dirname, "sounds/pedo_normal.mp3"), VOL);
-    if (w === 'pedomojado') sound.play(path.join(__dirname, "sounds/pedo_mojado.mp3"), VOL);
-    if (w === 'gota') sound.play(path.join(__dirname, "sounds/gota.mp3"), VOL);
-    if (w === 'aplausos niños' || w === 'aplausos') sound.play(path.join(__dirname, "sounds/aplausosniños.mp3"), VOL);
-    if (w === 'alertasubnormal' || w === 'alertaporsubnormal') sound.play(path.join(__dirname, "sounds/alertasubnormal.mp3"), VOL);
-    if (w === 'siuuu') sound.play(path.join(__dirname, "sounds/siuuu.mp3"), VOL);
-    if (w === 'estas tocandome' || w === 'tocandome') sound.play(path.join(__dirname, "sounds/estastocandome.mp3"), VOL);
-    if (w === 'notificacion') sound.play(path.join(__dirname, "sounds/whatsappweb.mp3"), VOL);
-    if (w === 'badumts') sound.play(path.join(__dirname, "sounds/badumts.mp3"), VOL);
-    if (w === 'pegriloso') sound.play(path.join(__dirname, "sounds/pegriloso.mp3"), VOL);
-    // if(w === 'gemido') sound.play(path.join(__dirname, "sounds/gemido.mp3"), VOL);
+    if(nameFiles.includes(w)) sound.play(path.join(__dirname, `sounds/${w}.mp3`), VOL);
 }
 
 const checkFileExists = (path) => {
