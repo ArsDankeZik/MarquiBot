@@ -17,7 +17,7 @@ var USER_OBJECT = {};
 var EXCEPT_FROM_PERMISSION_LIST = [];
 var USER_SALUTED = [];
 var streamerName = 'AlberMarqui';
-var streamerBirthday = '00/00/0000';
+var streamerBirthday = '26/11/1998';
 var socialNetworks = {
     'youtube': '',
     'instagram': 'https://bit.ly/3ky9kv5',
@@ -278,6 +278,13 @@ const intersect = (haystack, arr) => {
     return arr.some(v => haystack.includes(v.toLowerCase()));
 };
 
+function daysUntilNext(month, day){
+    var tday= new Date(), y= tday.getFullYear(), next= new Date(y, month-1, day);
+    tday.setHours(0, 0, 0, 0);
+    if(tday>next) next.setFullYear(y+1);
+    return Math.round((next-tday)/8.64e7);
+}
+
 const instersections = (_this) => {
     const [client, channel, message, tags] = _this;
 
@@ -319,7 +326,7 @@ const switchCMD = (_this) => {
             client.say(channel, `${donde()}`);
             break;
         case '!cumple':
-            client.say(channel, `El cumple de ${ streamerName } es el ${ streamerBirthday } y quedan ${ daysToBirthday(streamerBirthday.split('/')[1], streamerBirthday.split('/')[0]) } días`);
+            client.say(channel, `El cumple de ${ streamerName } es el ${ streamerBirthday } y quedan ${ daysUntilNext(streamerBirthday.split('/')[1], streamerBirthday.split('/')[0]) } días`);
             break;
         case '!insulto':
             client.say(channel, `${pickRandom(insultos)}`);
@@ -403,7 +410,7 @@ function setVolume(n) {
 
 const playSound = (w) => {
     const baseURL = 'https://github.com/ArsDankeZik/MarquiBot/raw/main/sounds/';
-    const nameFiles = 'gemido,alertasubnormal,aplausosniños,bofetón,estastocandome,gota,pedo_mojado,pedo_normal,recalculando,siuuu,sorpresa_aplausos,suspense,whatsappweb,pegriloso,badumts,ageofempires,among,banana,callalaboca,cerraelorto,discord,dorime,error,esecompa,esomentira,gilipollas,hellodarknessmyoldfriend,hellomf,hellothere,holajuancarlos,itwasthismoment,malditalisiada,mecagoentutia,mepicanloscocos,muertogtav,narutokun,nope,phubintro,quepaseeldesgraciado,quita,rajoyhacemosloquepodemos,risaibai,soyuntrolazo,troll,windows10error'.split(',');
+    const nameFiles = 'gemido,alertasubnormal,aplausosniños,bofetón,estastocandome,gota,pedo,pedomojado,recalculando,siuuu,sorpresa_aplausos,suspense,whatsappweb,pegriloso,badumts,ageofempires,among,banana,callalaboca,cerraelorto,discord,dorime,error,esecompa,esomentira,gilipollas,hellodarknessmyoldfriend,hellomf,hellothere,holajuancarlos,itwasthismoment,malditalisiada,mecagoentutia,mepicanloscocos,muertogtav,narutokun,nope,phubintro,quepaseeldesgraciado,quita,rajoyhacemosloquepodemos,risaibai,soyuntrolazo,troll,windows10error'.split(',');
 
     nameFiles.forEach(element => {
         const localPath = `sounds/${element}.mp3`
