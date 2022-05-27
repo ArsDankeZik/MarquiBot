@@ -410,7 +410,7 @@ function setVolume(n) {
 
 const playSound = (w) => {
     const baseURL = 'https://github.com/ArsDankeZik/MarquiBot/raw/main/sounds/';
-    const nameFiles = 'gemido,alertasubnormal,aplausosniños,bofetón,estastocandome,gota,pedo,pedomojado,recalculando,siuuu,sorpresa_aplausos,suspense,whatsappweb,pegriloso,badumts,ageofempires,among,banana,callalaboca,cerraelorto,discord,dorime,error,esecompa,esomentira,gilipollas,hellodarknessmyoldfriend,hellomf,hellothere,holajuancarlos,itwasthismoment,malditalisiada,mecagoentutia,mepicanloscocos,muertogtav,narutokun,nope,phubintro,quepaseeldesgraciado,quita,rajoyhacemosloquepodemos,risaibai,soyuntrolazo,troll,windows10error'.split(',');
+    const nameFiles = 'alertasubnormal,aplausosniños,bofeton,estastocandome,gota,pedo,pedomojado,recalculando,siuuu,sorpresa_aplausos,suspense,whatsappweb,pegriloso,badumts,ageofempires,among,banana,callalaboca,cerraelorto,discord,dorime,error,esecompa,esomentira,gilipollas,hellodarknessmyoldfriend,hellomf,hellothere,holajuancarlos,itwasthismoment,malditalisiada,mecagoentutia,mepicanloscocos,muertogtav,narutokun,nope,phubintro,quepaseeldesgraciado,quita,rajoyhacemosloquepodemos,risaibai,soyuntrolazo,troll,windows10error'.split(',');
 
     nameFiles.forEach(element => {
         const localPath = `sounds/${element}.mp3`
