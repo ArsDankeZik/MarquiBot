@@ -48,7 +48,7 @@ client.on('raided', (channel, username, viewers) => {
     if(viewers > 2) {
         setTimeout(() => {
             client.say(channel, `!so ${username}`);
-        }, 4000);
+        }, 6500);
     }
 });
 
