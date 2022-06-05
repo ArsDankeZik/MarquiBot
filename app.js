@@ -45,7 +45,11 @@ client.on('join', (channel, username, self) => {
 
 client.on('raided', (channel, username, viewers) => {
     console.log(`${username} ha robado el canal!`);
-    if(viewers > 2) client.say(channel, `!so ${username}`);
+    if(viewers > 2) {
+        setTimeout(() => {
+            client.say(channel, `!so ${username}`);
+        }, 4000);
+    }
 });
 
 client.on('message', (channel, tags, message, self) => {
