@@ -94,6 +94,8 @@ client.on('message', (channel, tags, message, self) => {
     func.displayHelpMenu(_this);
     // Saluda a los nuevos usuarios del chat cuando dicen hola
     func.sayHello(_this);
+    // Muestra los sonidos disponibles para el canje de puntos sonido
+    func.displaySonido();
     // Función a la escucha de ciertas palabras que activan ciertas funciones del bot
     func.instersections(_this);
     // Evalua qué comando está siendo llamado

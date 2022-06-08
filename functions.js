@@ -608,6 +608,8 @@ function resetVoiceForUser(user){
     return false;
 }
 
+const displaySonido = () => 'Lista con los sonidos disponibles: https://bit.ly/3MpIYqg';
+
 /**
  * 
  * @param {*} lvl 0, 1, 2 = (nobody), (mod, sub, vip), (broadcaster)
@@ -619,33 +621,34 @@ function resetVoiceForUser(user){
     const main = {
         // 'delete': 'BETA, no hay nada que saber de esto hasta que esté completo. No es peligroso usarlo',
         // 'sonido': 'Reproduce uno de los sonidos de la lista (bofeton, pedo, pedomojado, gota, aplausos niños, alertasubnormal, siuuu, estas tocandome, notificacion, pegriloso, badumts) según le indiques. EJ: !sonido bofeton',
-        'cumple': 'Muestra el tiempo restante para el cumpleaños del streamer',
-        'hora': 'Indica la hora actual en la península Ibérica',
-        'donde': 'Te dice el lugar en el que vive Alber Marqui',
-        'resetvoice': 'Establece una nueva voz para cuando uses el tts, pero cuidado, solo se puede usar 3 veces este comando',
-        'setcode': 'Establece el código de la partida para que el bot lo sople por el chat EJ: !setcode ABCDEF',
+        'adivina': 'En cada partida se generará un número al azar del 1 al 50. Con !adivinaelnr puedes intentar adivinarlo, pero cuidado, solo tienes seis vidas. Si fallas se te restará una vida, por otro lado sí ganas se te sumará una. EJ: !adivinaelnr 13',
         'code': 'Devuelve el código de la partida en curso y el código establecido',
-        'volumen': 'Establece el volumen de voz del bot, rango permitido 0.00 - 1.00 EJ: !volumen 0.95',
+        'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
+        'cumple': 'Muestra el tiempo restante para el cumpleaños del streamer',
+        'dado': 'Devolverá un número al azar entre el uno y el numero que le especifiques, sí no lo haces el máximo de caras serán seis. EJ: !dado 100',
+        'dc': 'Enlace de invitación al servidor de Discord',
+        'donde': 'Te dice el lugar en el que vive Alber Marqui',
         'excluir': 'Inhabilitará comandos para gente con permisos a pesar de tenerlos. EJ: !excluir anonymous',
+        'help': 'Este comando te devolverá la lista de comandos disponibles acorde a tu rango en el chat. Sí lo acompañas de algún otro comando te mostrará una descripción de lo que hace el comando especificado. EJ: !help tts',
+        'hora': 'Indica la hora actual en la península Ibérica',
+        'ig': 'Enlace del instagram de AlberMarqui',
         'incluir': 'Revertirá las acciones del comando !excluir. EJ: !incluir anonymous',
         'insulto': 'Devolverá al chat un insulto al azar',
+        'memide': 'Este comando calculará el tamaño de tu nepe y lo mostrará por el chat de manera graciosa',
+        'mostrarnr': 'Este comando enseñará el número a adivinar en el chat',
         'piropo': 'Devolverá al chat un piropo al azar',
         'rango': 'Te dirá qué rango tienes',
-        'creador': 'Hará un poco de spam a @NoctisMaiestatem que es el que ha creado el bot',
-        'dado': 'Devolverá un número al azar entre el uno y el numero que le especifiques, sí no lo haces el máximo de caras serán seis. EJ: !dado 100',
+        'resetvoice': 'Establece una nueva voz para cuando uses el tts, pero cuidado, solo se puede usar 3 veces este comando',
+        'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
+        'setcode': 'Establece el código de la partida para que el bot lo sople por el chat EJ: !setcode ABCDEF',
+        'social': 'Muestra los enlaces sociales del streamer',
+        'sonido': 'Muestra un enlace donde están publicados todos los sonidos que puedes usar con el canje de puntos, sonido',
         'tts': 'Leerá el mensaje que indiques. EJ: !tts Hola, ¿qué tal estás?',
         'ttsinsulto': 'Leerá un insulto al azar',
         'ttspiropo': 'Leerá un piropo al azar',
-        'adivina': 'En cada partida se generará un número al azar del 1 al 50. Con !adivinaelnr puedes intentar adivinarlo, pero cuidado, solo tienes seis vidas. Si fallas se te restará una vida, por otro lado sí ganas se te sumará una. EJ: !adivinaelnr 13',
-        'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
-        'rvidas': 'Este comando sirve para restablecer la vida de un usuario. EJ: !rvidas noctismaiestatem',
-        'mostrarnr': 'Este comando enseñará el número a adivinar en el chat',
-        'memide': 'Este comando calculará el tamaño de tu nepe y lo mostrará por el chat de manera graciosa',
-        'dc': 'Enlace de invitación al servidor de Discord',
-        'ig': 'Enlace del instagram de AlberMarqui',
         'tw': 'Enlace del twitter de AlberMarqui',
-        'social': 'Muestra los enlaces sociales del streamer',
-        'help': 'Este comando te devolverá la lista de comandos disponibles acorde a tu rango en el chat. Sí lo acompañas de algún otro comando te mostrará una descripción de lo que hace el comando especificado. EJ: !help tts'
+        'vidas': 'Con este comando puedes consultar cuántas vidas te quedan',
+        'volumen': 'Establece el volumen de voz del bot, rango permitido 0.00 - 1.00 EJ: !volumen 0.95',
     };
 
     const broadcasterCMD = ['mostrarnr', 'rvidas', 'delete', 'volumen', 'modcmd', 'incluir', 'excluir', 'code', 'setcode'];
@@ -816,6 +819,7 @@ module.exports = {
     instersections,
     switchCMD,
     isCustomReward,
+    displaySonido,
     magicNumber,
     alreadyConnected
 }
