@@ -89,7 +89,7 @@ client.on('message', (channel, tags, message, self) => {
     // Saca un dado al azar
     func.tirarDado(_this);
     // Restablece las vidas del usuario indicado
-    func.rVidas(_this)
+    func.rVidas(_this);
     // Enseña el menú de ayuda al usuario
     func.displayHelpMenu(_this);
     // Saluda a los nuevos usuarios del chat cuando dicen hola

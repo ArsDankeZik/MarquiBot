@@ -608,7 +608,11 @@ function resetVoiceForUser(user){
     return false;
 }
 
-const displaySonido = () => 'Lista con los sonidos disponibles: https://bit.ly/3MpIYqg';
+const displaySonido = (_this) => {
+    const [client, channel, message, tags] = _this;
+    if(msgIncludesCMD('!sonido', message)) client.say(channel, `Lista con los sonidos disponibles: https://bit.ly/3MpIYqg`);   
+}
+
 
 /**
  * 
@@ -793,7 +797,6 @@ const insultos = [
     'Tienes todas las virtudes que odio y ninguno de los vicios que admiro.',
     'Tu rostro es como febrero, lleno de escarcha, tormentas y nubosidad.'
 ];
-
 
 module.exports = {
     checkLVL,
