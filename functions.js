@@ -300,7 +300,7 @@ const instersections = (_this) => {
     }
 };
 
-const switchCMD = (_this) => {
+const switchCMD = (_this, io) => {
     const [client, channel, message, tags] = _this;
 
     switch (message.toLowerCase().trim()) {
@@ -315,6 +315,14 @@ const switchCMD = (_this) => {
             // hace un seguimiento de los tags del cualquier tipo de usuario por consola
             console.log(message);
             console.log(tags);
+            break;
+        case '!meme':
+            if (isModWhoCalls(tags)) {
+                fs.readdir('./memes', (err, files) => {
+                    if (err) console.error(err);
+                    else io.emit('meme', {memes: files});
+                });
+            }
             break;
         case '!rango':
             client.say(channel, `${dimeMiRango(tags.username, tags.badges)}`);

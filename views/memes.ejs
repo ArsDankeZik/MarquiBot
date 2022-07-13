@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MEMES</title>
+    <style>
+      body,
+      html {
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: 100% !important;
+        height: 100% !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        background: rgba(0, 0, 0, 0) !important;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- @nochecking developing memes -->
+    <video
+      id="videoPlayer1"
+      preload="auto"
+      autoplay=""
+      src=""
+      width="100%"
+      height="100%"
+      style="
+        display: none;
+        z-index: 1;
+        position: fixed;
+        right: 0px;
+        bottom: 0px;
+        min-width: 100%;
+        min-height: 100%;
+        opacity: 1;
+      "
+    >
+      <source class="mp4Source" type="video/mp4" />
+    </video>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      const socket = io('http://localhost:3000')
+      const $ = (i) => document.querySelector(i)
+
+      socket.on('meme', async (_obj) => {
+        console.log(_obj)
+        const meme = _obj.memes[Math.floor(Math.random() * _obj.memes.length)];
+
+        $('#videoPlayer1').style.display = 'block'
+        $('#videoPlayer1').src = `/${meme}`
+        $('#videoPlayer1').onended = (t) => {
+          console.log('Meme ended')
+          $('#videoPlayer1').pause()
+          $('#videoPlayer1').style.display = 'none'
+        }
+      })
+    </script>
+  </body>
+</html>

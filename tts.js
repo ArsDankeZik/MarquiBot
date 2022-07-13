@@ -1,4 +1,5 @@
 const open = require('open');
+const fs = require('fs');
 
 function tts_service(){    
     ////////////////////////////////////////////////////////////////////////
@@ -39,11 +40,9 @@ function tts_service(){
     app.set('view engine', 'ejs');
     
     app.use(express.static(__dirname + '/views'));
+    app.use(express.static(__dirname + '/memes'))
     
     var util = require('util');
-    
-    
-    
     ////////////////////////////////////////////////////////////////////////
     // Global Variable 
     ////////////////////////////////////////////////////////////////////////
@@ -81,6 +80,10 @@ function tts_service(){
         speakerIDLabel: speakerIDLabel
       });
     });
+
+    app.use('/memes/', (req, res) => {
+      res.render(__dirname + '/views/memes.ejs', {});
+  });
     
     
     // GET handler .  
@@ -255,6 +258,8 @@ function tts_service(){
       console.log('listening on *:' + servicePort);
       open('http://localhost:3000/');
     });
+
+    return io;
 }
 
 
