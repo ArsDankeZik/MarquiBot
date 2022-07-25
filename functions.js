@@ -300,7 +300,7 @@ const instersections = (_this) => {
     }
 };
 
-const randomMeme = () => {
+const randomMeme = (io) => {
     fs.readdir('./memes', (err, files) => {
         if (err) console.error(err);
         else io.emit('meme', {memes: files});
