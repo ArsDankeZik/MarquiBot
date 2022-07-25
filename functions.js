@@ -325,7 +325,7 @@ const switchCMD = (_this, io) => {
             break;
         case '!meme':
             if (isModWhoCalls(tags)) {
-                randomMeme();
+                randomMeme(io);
             }
             break;
         case '!rango':
