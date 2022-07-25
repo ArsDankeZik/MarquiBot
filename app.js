@@ -59,7 +59,7 @@ client.on('message', (channel, tags, message, self) => {
         console.log('============================> THE CUSTOM REWARD IS: ' + tags['custom-reward-id']);
         
         if(tags['custom-reward-id'] == 'f92760ac-e62b-4169-892c-684654fd2670') {
-            func.randomMeme(tags);
+            func.randomMeme();
         }
 
         if(tags['custom-reward-id'] == '3eeda0b4-a6f4-4304-b029-8f81631982eb'){

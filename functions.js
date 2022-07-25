@@ -300,13 +300,11 @@ const instersections = (_this) => {
     }
 };
 
-const randomMeme = (tags) => {
-    if (isModWhoCalls(tags)) {
-        fs.readdir('./memes', (err, files) => {
-            if (err) console.error(err);
-            else io.emit('meme', {memes: files});
-        });
-    }
+const randomMeme = () => {
+    fs.readdir('./memes', (err, files) => {
+        if (err) console.error(err);
+        else io.emit('meme', {memes: files});
+    });
 };
 
 const switchCMD = (_this, io) => {
@@ -326,7 +324,9 @@ const switchCMD = (_this, io) => {
             console.log(tags);
             break;
         case '!meme':
-            randomMeme(tags);
+            if (isModWhoCalls(tags)) {
+                randomMeme();
+            }
             break;
         case '!rango':
             client.say(channel, `${dimeMiRango(tags.username, tags.badges)}`);
