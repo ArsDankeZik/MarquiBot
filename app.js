@@ -57,6 +57,11 @@ client.on('message', (channel, tags, message, self) => {
     if (self) return;
     if(func.isCustomReward(tags)) {
         console.log('============================> THE CUSTOM REWARD IS: ' + tags['custom-reward-id']);
+        
+        if(tags['custom-reward-id'] == '_') {
+            func.randomMeme();
+        }
+
         if(tags['custom-reward-id'] == '3eeda0b4-a6f4-4304-b029-8f81631982eb'){
             msg = message.trim();
             if(!msg) client.say(channel, `Te has olvidado de indicar que tipo de sonido reproducir. ${ func.helpMenu(checkLVL(tags), false, 'sonido') }`);
