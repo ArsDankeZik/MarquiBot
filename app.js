@@ -58,7 +58,7 @@ client.on('message', (channel, tags, message, self) => {
     if(func.isCustomReward(tags)) {
         console.log('============================> THE CUSTOM REWARD IS: ' + tags['custom-reward-id']);
         
-        if(tags['custom-reward-id'] == '_') {
+        if(tags['custom-reward-id'] == 'f92760ac-e62b-4169-892c-684654fd2670') {
             func.randomMeme();
         }
 
