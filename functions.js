@@ -326,7 +326,7 @@ const switchCMD = (_this, io) => {
             console.log(tags);
             break;
         case '!meme':
-            randomMeme();
+            randomMeme(tags);
             break;
         case '!rango':
             client.say(channel, `${dimeMiRango(tags.username, tags.badges)}`);
