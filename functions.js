@@ -520,9 +520,10 @@ function takeAGuess(nr, name) {
 
 function registerUserAndCount(name, opt) {
     const totalLifes = 6;
+    const lifesToHearts = (n) => new Array(Number(n)).fill('💖').join('');
 
-    if (opt && opt === 'vidas' && Object.keys(OBJECT_PEOPLE_LIFES).length == 0) return `Te quedan ${totalLifes} vidas`;
-    if (opt && opt === 'vidas') return `Te quedan ${OBJECT_PEOPLE_LIFES[name]} vidas`;
+    if (opt && opt === 'vidas' && Object.keys(OBJECT_PEOPLE_LIFES).length == 0) return `Te quedan ${lifesToHearts(totalLifes)}`;
+    if (opt && opt === 'vidas') return `Te quedan ${lifesToHearts(OBJECT_PEOPLE_LIFES[name])}`;
     if (!OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;
 
     if (opt === 'reset' && OBJECT_PEOPLE_LIFES.hasOwnProperty(name)) OBJECT_PEOPLE_LIFES[name] = totalLifes;

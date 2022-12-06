@@ -40,7 +40,7 @@ function tts_service(){
     app.set('view engine', 'ejs');
     
     app.use(express.static(__dirname + '/views'));
-    app.use(express.static(__dirname + '/memes'))
+    app.use(express.static(__dirname + '/memes'));
     
     var util = require('util');
     ////////////////////////////////////////////////////////////////////////
